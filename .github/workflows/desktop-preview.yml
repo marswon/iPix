@@ -9,6 +9,10 @@ on:
         description: Branch, tag, or commit to package
         required: true
         default: main
+      prerelease_tag:
+        description: Optional prerelease tag; publishes the Apple Silicon artifact when set
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -67,3 +71,38 @@ jobs:
           path: release-preview/*.exe
           if-no-files-found: error
           retention-days: 7
+
+  publish-prerelease:
+    if: github.event_name == 'workflow_dispatch' && inputs.prerelease_tag != ''
+    needs: mac-preview
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_TAG: ${{ inputs.prerelease_tag }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nomi-preview-mac-arm64
+          path: prerelease
+      - name: Publish Apple Silicon prerelease
+        shell: bash
+        run: |
+          notes=$(cat <<EOF
+          GetToken model-service test build.
+
+          - GetToken is available as a preset platform; enter only the API key.
+          - This curated group includes Seedance 2.0 text-to-video, first-frame, and first/last-frame modes.
+          - Legacy gettoken.net relay connections and saved credentials migrate to the preset when no credential conflict exists.
+          - Source commit: $GITHUB_SHA
+          - Build run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          EOF
+          )
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" prerelease/*.dmg --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --title "iPix $RELEASE_TAG" --notes "$notes" --prerelease
+          else
+            gh release create "$RELEASE_TAG" prerelease/*.dmg --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "iPix $RELEASE_TAG" --notes "$notes" --prerelease
+          fi
