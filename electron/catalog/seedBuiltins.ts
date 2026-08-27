@@ -71,6 +71,8 @@ import { CODEX_LOCAL_VENDOR_SEED, CODEX_IMAGE_CURATED_MODELS, CODEX_IMAGE_CURATE
 import { VOLCENGINE_IMAGE_MODELS } from "./volcengineImages";
 import { VOLCENGINE_AUDIO_MODELS } from "./volcengineAudios";
 import { VOLCENGINE_SEEDANCE_QUERY_OP, VOLCENGINE_SEEDANCE_STATUS_MAPPING, VOLCENGINE_VIDEO_MODELS } from "./volcengineVideos";
+import { GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
+import { migrateGetTokenVendorAliases } from "./gettokenVendorMigration";
 
 /** curated 模型/mapping 的内部类型（reconcile 两函数的输入）。 */
 type CuratedModel = {
@@ -90,6 +92,12 @@ type CuratedMapping = {
   query?: HttpOperation;
   statusMapping?: Mapping["statusMapping"];
 };
+
+const GETTOKEN_CURATED_MODELS: CuratedModel[] = [GETTOKEN_SEEDANCE_MODEL_SEED];
+const GETTOKEN_CURATED_MAPPINGS: CuratedMapping[] = [
+  { id: "seed-gettoken-seedance2-text_to_video", taskKind: "text_to_video", modelKey: GETTOKEN_SEEDANCE_MODEL_SEED.modelKey, name: "GetToken Seedance 2.0 · 文生视频", create: GETTOKEN_SEEDANCE_PROFILE.create.text_to_video!, query: GETTOKEN_SEEDANCE_PROFILE.query, statusMapping: GETTOKEN_SEEDANCE_PROFILE.statusMapping },
+  { id: "seed-gettoken-seedance2-image_to_video", taskKind: "image_to_video", modelKey: GETTOKEN_SEEDANCE_MODEL_SEED.modelKey, name: "GetToken Seedance 2.0 · 图生视频", create: GETTOKEN_SEEDANCE_PROFILE.create.image_to_video!, query: GETTOKEN_SEEDANCE_PROFILE.query, statusMapping: GETTOKEN_SEEDANCE_PROFILE.statusMapping },
+];
 
 /** 稳定 id：按 (vendor, taskKind, model) 固定，便于幂等与排查。 */
 const SEEDANCE_MAPPING_ID = "seed-kie-seedance2-image_to_video";
@@ -483,10 +491,12 @@ function reconcileMappings(mappings: Mapping[], vendorKey: string, curated: Cura
 }
 
 export function applyBuiltinSeeds(state: CatalogState, now: string): { state: CatalogState; changed: boolean } {
-  const vendors = [...state.vendors];
-  const models = [...state.models];
-  const mappings = [...state.mappings];
-  let changed = false;
+  const migrated = migrateGetTokenVendorAliases(state);
+  const base = migrated.state;
+  const vendors = [...base.vendors];
+  const models = [...base.models];
+  const mappings = [...base.mappings];
+  let changed = migrated.changed;
 
   // 供应商：清单住在 builtinVendorSeeds.ts（单一真相源，deriveVendorKeyFromBaseUrl 的
   // 「已知 host → 内置 vendorKey」别名表由同一份清单派生，不另抄一份）。
@@ -518,6 +528,7 @@ export function applyBuiltinSeeds(state: CatalogState, now: string): { state: Ca
   if (reconcileModels(models, RUNNINGHUB_VENDOR_SEED.key, RUNNINGHUB_IMAGE_CURATED_MODELS, now)) changed = true;
   if (reconcileModels(models, COMFYUI_VENDOR_SEED.key, COMFYUI_CURATED_MODELS, now)) changed = true;
   if (reconcileModels(models, CODEX_LOCAL_VENDOR_SEED.key, CODEX_IMAGE_CURATED_MODELS, now)) changed = true;
+  if (reconcileModels(models, GETTOKEN_VENDOR_SEED.key, GETTOKEN_CURATED_MODELS, now)) changed = true;
 
   // kie 历史包袱 repair：把视频形状的坏 (kie, text_to_image) 替换成正确的 GPT Image 2 文生图契约
   // （旧 onboarding 抽错留下的；契约见 kieGptImage2.ts 直连实测确认）。apimart 无此历史，不需要。
@@ -549,7 +560,8 @@ export function applyBuiltinSeeds(state: CatalogState, now: string): { state: Ca
   if (reconcileMappings(mappings, RUNNINGHUB_VENDOR_SEED.key, RUNNINGHUB_IMAGE_CURATED_MAPPINGS, now)) changed = true;
   if (reconcileMappings(mappings, COMFYUI_VENDOR_SEED.key, COMFYUI_CURATED_MAPPINGS, now)) changed = true;
   if (reconcileMappings(mappings, CODEX_LOCAL_VENDOR_SEED.key, CODEX_IMAGE_CURATED_MAPPINGS, now)) changed = true;
+  if (reconcileMappings(mappings, GETTOKEN_VENDOR_SEED.key, GETTOKEN_CURATED_MAPPINGS, now)) changed = true;
 
   if (!changed) return { state, changed: false };
-  return { state: { ...state, vendors, models, mappings }, changed: true };
+  return { state: { ...base, vendors, models, mappings }, changed: true };
 }

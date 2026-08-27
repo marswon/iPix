@@ -100,6 +100,18 @@ export const KNOWN_VENDORS: readonly KnownVendor[] = [
     },
   },
   {
+    vendorKey: 'gettoken',
+    glyph: 'Gt',
+    tagline: 'Seedance 2.0 已适配 · 只需 API Key',
+    credentialPlaceholder: '粘贴 GetToken API Key',
+    credentialHint: 'Nomi 已维护 GetToken 的 Seedance 2.0 请求与轮询协议。凭证本地加密存储、只在调用时使用。',
+    promo: {
+      text: 'GetToken 模型中转平台。可用模型、价格和额度以当前账户为准。',
+      ctaLabel: '打开 GetToken',
+      url: 'https://www.gettoken.net',
+    },
+  },
+  {
     vendorKey: 'kie',
     logo: new URL('../assets/vendor-logos/kie.png', import.meta.url).href,
     glyph: 'K',

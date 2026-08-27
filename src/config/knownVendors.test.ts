@@ -15,6 +15,7 @@ import { VOLCENGINE_VENDOR_SEED, VOLCENGINE_SPEECH_VENDOR_SEED } from '../../ele
 import { DREAMINA_VENDOR_SEED } from '../../electron/catalog/dreaminaVendor'
 import { RUNNINGHUB_VENDOR_SEED } from '../../electron/catalog/runninghub3d'
 import { REPLICATE_VENDOR_SEED } from '../../electron/catalog/replicate'
+import { GETTOKEN_VENDOR_SEED } from '../../electron/catalog/gettokenSeedance'
 
 // 单一来源：seedBuiltins.applyBuiltinSeeds 实际 seed 的内置 vendor（每个的 *_VENDOR_SEED.key）。
 const SEEDED_BUILTIN_KEYS = new Set<string>([
@@ -27,12 +28,16 @@ const SEEDED_BUILTIN_KEYS = new Set<string>([
   DREAMINA_VENDOR_SEED.key,
   RUNNINGHUB_VENDOR_SEED.key,
   REPLICATE_VENDOR_SEED.key,
+  GETTOKEN_VENDOR_SEED.key,
 ])
 
 describe('KNOWN_VENDORS × seed 身份键不变量', () => {
   it('每个展示卡的 vendorKey 都指向真实被 seed 的内置 vendor（防展示指向幽灵 vendor / 防 rename 漂移）', () => {
     for (const v of KNOWN_VENDORS) {
-      expect(SEEDED_BUILTIN_KEYS.has(v.vendorKey), `KNOWN_VENDORS「${v.vendorKey}」不在 seed 内置集 ${[...SEEDED_BUILTIN_KEYS].join(',')}`).toBe(true)
+      expect(
+        SEEDED_BUILTIN_KEYS.has(v.vendorKey),
+        `KNOWN_VENDORS「${v.vendorKey}」不在 seed 内置集 ${[...SEEDED_BUILTIN_KEYS].join(',')}`,
+      ).toBe(true)
     }
   })
 

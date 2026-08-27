@@ -115,6 +115,22 @@ export function isGetTokenBaseUrl(baseUrl: string): boolean {
   }
 }
 
+export const GETTOKEN_VENDOR_SEED = {
+  key: "gettoken",
+  name: "GetToken",
+  baseUrl: "https://www.gettoken.net",
+  hostSuffixes: ["gettoken.net"] as const,
+  authType: "bearer" as const,
+};
+
+export const GETTOKEN_SEEDANCE_MODEL_SEED = {
+  modelKey: "doubao-seedance-2-0-260128",
+  labelZh: "Seedance 2.0",
+  kind: "video" as const,
+  archetypeId: "volcengine-seedance-2",
+  meta: { wireProfile: "gettoken-seedance-2" },
+};
+
 export const GETTOKEN_SEEDANCE_PROFILE: NativeWireProfile = {
   id: "gettoken-seedance-2",
   archetypeId: "volcengine-seedance-2",

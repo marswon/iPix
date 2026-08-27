@@ -9,6 +9,7 @@ import { REPLICATE_VENDOR_SEED } from "./replicate";
 import { COMFYUI_VENDOR_SEED } from "./comfyuiLocal";
 import { CODEX_LOCAL_VENDOR_SEED } from "./codexImages";
 import { ANTIGRAVITY_VENDOR_SEED } from "./antigravityTexts";
+import { GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
 import type { Vendor } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,8 @@ export type VendorSeed = {
   authHeader?: string | null;
   enabled?: boolean;
   assetIngestion?: Vendor["assetIngestion"];
+  /** Canonical domain suffixes whose apex and subdomains share this vendor identity. */
+  hostSuffixes?: readonly string[];
 };
 
 /** 顺序 = 原 seedBuiltins 的播种顺序（保持既有装机行为一致）。 */
@@ -41,6 +44,7 @@ export const BUILTIN_VENDOR_SEEDS: readonly VendorSeed[] = [
   COMFYUI_VENDOR_SEED, // 本地 ComfyUI（无鉴权本地后端，默认关、用户显式启用）
   CODEX_LOCAL_VENDOR_SEED, // Codex 本地生图（实验，默认关）
   ANTIGRAVITY_VENDOR_SEED, // 官方本机 CLI；完整能力验证前默认关闭
+  GETTOKEN_VENDOR_SEED, // GetToken Seedance 2.0 已验证 wire；模型服务页只需填 key
 ];
 
 /**
@@ -72,5 +76,11 @@ const HOST_TO_BUILTIN_VENDOR_KEY: ReadonlyMap<string, string> = new Map(
 
 /** 该 hostname 是否是我们内置认得的供应商；是则返回内置 vendorKey，否则 null。 */
 export function builtinVendorKeyForHostname(hostname: string): string | null {
-  return HOST_TO_BUILTIN_VENDOR_KEY.get(String(hostname || "").trim().toLowerCase()) ?? null;
+  const normalized = String(hostname || "").trim().toLowerCase();
+  const exact = HOST_TO_BUILTIN_VENDOR_KEY.get(normalized);
+  if (exact) return exact;
+  for (const seed of BUILTIN_VENDOR_SEEDS) {
+    if (seed.hostSuffixes?.some((suffix) => normalized === suffix || normalized.endsWith(`.${suffix}`))) return seed.key;
+  }
+  return null;
 }

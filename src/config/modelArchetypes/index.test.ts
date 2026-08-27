@@ -19,6 +19,14 @@ describe("resolveArchetypeForModel — 供应商无关的识别桥", () => {
     expect(a?.id).toBe("seedance-2");
   });
 
+  it("同一模型身份按供应商已验证 wire 收窄模式，不为 GetToken 暴露 omni", () => {
+    const a = resolveArchetypeForModel(m({
+      vendorKey: "gettoken", modelKey: "doubao-seedance-2-0-260128", meta: { archetypeId: "volcengine-seedance-2" },
+    }));
+    expect(a?.id).toBe("volcengine-seedance-2");
+    expect(a?.modes.map((mode) => mode.id)).toEqual(["t2v", "first", "firstlast"]);
+  });
+
   it("画布节点持久化的 meta.archetype.id 直接命中，即使供应商 modelKey 不在 patterns", () => {
     const a = resolveArchetypeForModel(m({
       modelKey: "vendor-specific-key-not-in-patterns",

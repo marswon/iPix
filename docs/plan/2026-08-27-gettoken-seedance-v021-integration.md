@@ -29,6 +29,13 @@ The v0.21 upstream release also changed Seedance profile derivation and fixed fr
 5. Use a named request transform to choose top-level `image` versus `images` after template rendering. This avoids adding GetToken-specific state to the shared v0.21 task parameter projection.
 6. Reuse the existing role-bearing Seedance archetype content objects for `metadata.content`.
 7. Upgrade existing GetToken catalog entries during post-window startup maintenance.
+8. Seed GetToken as an adapted, key-only platform service. This batch adds the verified Seedance model and both mappings; the vendor remains open for other GetToken models in later curated groups.
+9. Consolidate legacy `gettoken.net` relay identities, models, mappings, and their saved credential into `gettoken` when doing so cannot overwrite a distinct canonical credential.
+10. Keep the shared `volcengine-seedance-2` model identity while declaring GetToken's verified mode subset (`t2v`, first frame, first/last frame), so omni references never appear on this wire.
+
+## Post-install Evidence
+
+A packaged Preview configured through the generic relay flow normalized the create response to `id=13`, then received `HTTP 400 task_not_exist` from `GET /v1/video/generations/13`. This establishes that the single generic verification attempt failed, but the screenshot does not retain the raw create response or timing, so it cannot diagnose task-id shape versus an upstream visibility race. Do not speculate by removing supported response paths. Because this is an independently verified preset contract, its onboarding should not depend on a paid generic create/poll check; users enter only their key.
 
 ## Non-goals
 

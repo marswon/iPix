@@ -184,6 +184,8 @@ export type ModelArchetype = {
   /** 契约出处（见 ArchetypeSource）。**新增档案必填**；存量未补的在门岗白名单里，只减不增。 */
   sources?: ArchetypeSource[];
   modes: ArchetypeMode[];
+  /** 同一模型身份经不同供应商接入时，只公开该供应商已有真实 wire 支撑的模式。 */
+  vendorModeIds?: Record<string, string[]>;
   defaultModeId: string;
   /**
    * **变体轴**（可选，与 modes 正交）：一族「同能力、不同 model 字符串」的变体。声明后 UI 出变体分段

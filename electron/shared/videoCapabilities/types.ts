@@ -111,6 +111,8 @@ export type ModelArchetype = {
   kind: "video" | "image" | "audio" | "model3d";
   sources?: ArchetypeSource[];
   modes: ArchetypeMode[];
+  /** Provider-specific verified mode subset for a shared model identity. */
+  vendorModeIds?: Record<string, string[]>;
   defaultModeId: string;
   variants?: ModelArchetypeVariant[];
   defaultVariantId?: string;

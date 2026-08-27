@@ -36,6 +36,22 @@ describe("applyBuiltinSeeds", () => {
     expect(mapping?.query?.path).toBe("/api/v1/jobs/recordInfo");
   });
 
+  it("空目录：预制 GetToken 服务、Seedance 模型和文生/图生两条已验证通道", () => {
+    const { state } = applyBuiltinSeeds(emptyCatalog(), NOW);
+    expect(state.vendors.find((vendor) => vendor.key === "gettoken")).toMatchObject({
+      name: "GetToken", enabled: true, baseUrlHint: "https://www.gettoken.net", authType: "bearer",
+    });
+    expect(state.models.find((model) => model.vendorKey === "gettoken")).toMatchObject({
+      modelKey: "doubao-seedance-2-0-260128", kind: "video",
+      meta: { wireProfile: "gettoken-seedance-2", archetypeId: "volcengine-seedance-2" },
+    });
+    const text = selectTaskMapping(state.mappings, "gettoken", "text_to_video", "doubao-seedance-2-0-260128");
+    const image = selectTaskMapping(state.mappings, "gettoken", "image_to_video", "doubao-seedance-2-0-260128");
+    expect(text?.create.path).toBe("/v1/video/generations");
+    expect(image?.create.request_transform).toBe("gettoken-seedance-frames");
+    expect(text?.query?.path).toBe("/v1/video/generations/{{providerMeta.task_id}}");
+  });
+
   it("空目录：补齐 HappyHorse 模型 + (kie, text_to_video) mapping（C4）", () => {
     const { state } = applyBuiltinSeeds(emptyCatalog(), NOW);
     const model = state.models.find((m) => m.modelKey === "happyhorse");

@@ -149,7 +149,7 @@ export function projectOnboardingConnections({ models, vendorMeta, dreaminaStatu
       models: [],
       logo: card.directory.logo,
       glyph: card.directory.glyph,
-    }, ['apimart', 'kie'].includes(card.directory.vendorKey)
+    }, ['apimart', 'kie', 'gettoken'].includes(card.directory.vendorKey)
       ? () => openPage({ type: 'platformConnect', vendorKey: card.directory.vendorKey })
       : undefined)),
     ...comfyuiAvailableList.map((instance) => homeConnection({

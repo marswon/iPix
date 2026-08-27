@@ -175,13 +175,25 @@ function profileFor(model: VideoCatalogModel): ModelArchetype {
 }
 
 function specializeForProvider(archetype: ModelArchetype, provider: string): ModelArchetype {
-  if (!archetype.modes.some((mode) => mode.vendorParams?.[provider])) return archetype;
+  const allowedModeIds = archetype.vendorModeIds?.[provider];
+  const modes = allowedModeIds
+    ? archetype.modes.filter((mode) => allowedModeIds.includes(mode.id))
+    : archetype.modes;
+  const hasParamOverrides = modes.some((mode) => mode.vendorParams?.[provider]);
+  if (!allowedModeIds && !hasParamOverrides) return archetype;
+  const specializedModes = hasParamOverrides
+    ? modes.map((mode) => {
+        const params = mode.vendorParams?.[provider];
+        return params ? { ...mode, params } : mode;
+      })
+    : modes;
+  if (specializedModes.length === 0) return archetype;
   return {
     ...archetype,
-    modes: archetype.modes.map((mode) => {
-      const params = mode.vendorParams?.[provider];
-      return params ? { ...mode, params } : mode;
-    }),
+    modes: specializedModes,
+    defaultModeId: specializedModes.some((mode) => mode.id === archetype.defaultModeId)
+      ? archetype.defaultModeId
+      : specializedModes[0].id,
   };
 }
 

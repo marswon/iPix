@@ -456,6 +456,13 @@ export const zhOnboardingProviders = {
         'Agnes AI 提供 OpenAI 兼容的文本、图片与视频 API。公开模型清单不代表当前套餐均可调用。',
       promoCta: '打开 Agnes 平台',
     },
+    gettoken: {
+      tagline: 'Seedance 2.0 已适配 · 只需 API Key',
+      credentialPlaceholder: '粘贴 GetToken API Key',
+      credentialHint: 'Nomi 已维护 GetToken 的 Seedance 2.0 请求与轮询协议。凭证本地加密存储、只在调用时使用。',
+      promoText: 'GetToken 模型中转平台。可用模型、价格和额度以当前账户为准。',
+      promoCta: '打开 GetToken',
+    },
     kie: {
       tagline: '一个 key，解锁内置模型',
       promoText: '如果你愿意，可以用我们的链接注册；不愿意也可以直接去官方注册。',
@@ -1629,6 +1636,13 @@ export const enOnboardingProviders = {
       promoText:
         'Agnes AI provides OpenAI-compatible text, image and video APIs. The public model catalog does not guarantee access under your current plan.',
       promoCta: 'Open Agnes platform',
+    },
+    gettoken: {
+      tagline: 'Seedance 2.0 adapted · Only an API key is required',
+      credentialPlaceholder: 'Paste your GetToken API Key',
+      credentialHint: 'Nomi maintains the GetToken Seedance 2.0 request and polling contract. Credentials are encrypted locally and used only for requests.',
+      promoText: 'GetToken is a model relay platform. Models, pricing, and quotas depend on your account.',
+      promoCta: 'Open GetToken',
     },
     kie: {
       tagline: 'One key unlocks built-in models',

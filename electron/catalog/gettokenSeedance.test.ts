@@ -4,6 +4,7 @@ import { firstMappedString, resolveTaskStatus, valuesFromMapping } from "../task
 import { applyRequestTransform } from "../tasks/requestTransforms";
 import { draftShapeForKind } from "./catalogCommit";
 import { GETTOKEN_SEEDANCE_PROFILE, isGetTokenBaseUrl } from "./gettokenSeedance";
+import { builtinVendorKeyForHostname } from "./builtinVendorSeeds";
 import {
   listVerifiedWireProfiles,
   nativeWireProfileById,
@@ -52,6 +53,12 @@ const baseParams = {
 };
 
 describe("GetToken Seedance wire profile", () => {
+  it("把平台主域和子域统一到 canonical vendor 身份", () => {
+    expect(builtinVendorKeyForHostname("gettoken.net")).toBe("gettoken");
+    expect(builtinVendorKeyForHostname("www.gettoken.net")).toBe("gettoken");
+    expect(builtinVendorKeyForHostname("api.gettoken.net")).toBe("gettoken");
+  });
+
   it("只匹配 GetToken 主域及其子域，不污染其它 New API 中转", () => {
     expect(isGetTokenBaseUrl("https://www.gettoken.net/v1")).toBe(true);
     expect(isGetTokenBaseUrl("https://api.gettoken.net")).toBe(true);

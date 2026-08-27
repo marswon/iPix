@@ -37,6 +37,14 @@ describe("shared video capability registry", () => {
     expect(candidates.map((candidate) => candidate.variantId)).toEqual(["standard", "fast", "mini"]);
   });
 
+  it("limits a shared model identity to the modes verified by its provider wire", () => {
+    const [gettoken] = buildVideoModelCandidates([
+      { provider: "gettoken", modelKey: "doubao-seedance-2-0-260128", label: "Seedance 2.0", archetypeId: "volcengine-seedance-2" },
+    ]);
+    expect(gettoken?.archetype.id).toBe("volcengine-seedance-2");
+    expect(gettoken?.archetype.modes.map((mode) => mode.id)).toEqual(["t2v", "first", "firstlast"]);
+  });
+
   it("recommends from facts without any provider or app dependency", () => {
     const candidates = buildVideoModelCandidates([
       { provider: "apimart", modelKey: "doubao-seedance-2.0", label: "Seedance 2.0" },

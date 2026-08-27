@@ -5,13 +5,15 @@ import { describe, expect, it } from 'vitest'
 const read = (relative: string): string => fs.readFileSync(path.join(process.cwd(), relative), 'utf8')
 
 describe('approved model access architecture', () => {
-  it('has a dedicated key-only route for APIMart and Kie.ai', () => {
+  it('has a dedicated key-only route for adapted platforms including GetToken', () => {
     const drawer = read('src/ui/onboarding/OnboardingDrawer.tsx')
     const navigation = read('src/ui/onboarding/modelSettingsNavigation.ts')
+    const connections = read('src/ui/onboarding/onboardingDrawerConnections.ts')
     const page = read('src/ui/onboarding/KnownVendorKeyConnectPage.tsx')
 
     expect(navigation).toContain("type: 'platformConnect'")
     expect(drawer).toContain("page.type === 'platformConnect'")
+    expect(connections).toContain("['apimart', 'kie', 'gettoken']")
     expect(drawer).toContain('<KnownVendorKeyConnectPage')
     expect(page).toContain('data-key-only-vendor')
     expect(page.match(/type="password"/g)).toHaveLength(1)
@@ -30,7 +32,9 @@ describe('approved model access architecture', () => {
     expect(catalog).toContain('DREAMINA_UNCHECKED_STATUS')
     expect(catalog).toContain('setDreaminaStatus((current) => current ?? DREAMINA_UNCHECKED_STATUS)')
     const available = connections.slice(connections.indexOf('const availableHomeConnections'))
-    expect(available.indexOf('vendorKey: DREAMINA_CONNECTION_KEY')).toBeLessThan(available.indexOf('vendorKey: CODEX_LOCAL_VENDOR_KEY'))
+    expect(available.indexOf('vendorKey: DREAMINA_CONNECTION_KEY')).toBeLessThan(
+      available.indexOf('vendorKey: CODEX_LOCAL_VENDOR_KEY'),
+    )
   })
 
   it('keeps MCP out of Models and places its management before trusted hosts', () => {

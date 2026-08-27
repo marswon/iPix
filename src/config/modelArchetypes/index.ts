@@ -211,13 +211,23 @@ function resolveBaseArchetype(model: ArchetypeModelLike): ModelArchetype | null 
 export function specializeArchetypeForVendor(archetype: ModelArchetype, vendorKey: string | null | undefined): ModelArchetype {
   const key = typeof vendorKey === "string" ? vendorKey.trim() : "";
   if (!key) return archetype;
-  if (!archetype.modes.some((m) => m.vendorParams && m.vendorParams[key])) return archetype;
+  const allowedModeIds = archetype.vendorModeIds?.[key];
+  const modes = allowedModeIds ? archetype.modes.filter((mode) => allowedModeIds.includes(mode.id)) : archetype.modes;
+  const hasParamOverrides = modes.some((mode) => mode.vendorParams?.[key]);
+  if (!allowedModeIds && !hasParamOverrides) return archetype;
+  const specializedModes = hasParamOverrides
+    ? modes.map((mode) => {
+        const vp = mode.vendorParams?.[key];
+        return vp ? { ...mode, params: vp } : mode;
+      })
+    : modes;
+  if (specializedModes.length === 0) return archetype;
   return {
     ...archetype,
-    modes: archetype.modes.map((m) => {
-      const vp = m.vendorParams?.[key];
-      return vp ? { ...m, params: vp } : m;
-    }),
+    modes: specializedModes,
+    defaultModeId: specializedModes.some((mode) => mode.id === archetype.defaultModeId)
+      ? archetype.defaultModeId
+      : specializedModes[0].id,
   };
 }
 

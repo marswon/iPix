@@ -45,6 +45,7 @@ describe("GetToken Seedance onboarding commit", () => {
       ],
     });
 
+    expect(result.vendorKey).toBe("gettoken");
     const model = listModelCatalogModels().find(
       (candidate) => candidate.vendorKey === result.vendorKey && candidate.modelKey === "doubao-seedance-2-0-260128",
     );
