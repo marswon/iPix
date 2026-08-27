@@ -117,6 +117,23 @@ describe('projectModelCapability', () => {
     expect(JSON.stringify(result)).not.toMatch(/first_frame|last_frame|image_ref/)
   })
 
+  it('keeps catalog-managed wire evidence separate from generic adapter verification', () => {
+    const managed = projectModelCapability({
+      model: model({ meta: { wireProfile: 'gettoken-seedance-2', catalogManagedWire: true, catalogPresetRevision: 2 } }),
+      archetype: MULTI_MODE_ARCHETYPE,
+      mappings: [mapping('text_to_video'), mapping('image_to_video')],
+    })
+    expect(managed.transport.catalogManagedTaskKinds).toEqual(['image_to_video', 'text_to_video'])
+    expect(managed.transport.verifiedTaskKinds).toEqual([])
+
+    const generic = projectModelCapability({
+      model: model({ meta: { wireProfile: 'made-up', catalogManagedWire: false } }),
+      archetype: MULTI_MODE_ARCHETYPE,
+      mappings: [mapping('image_to_video')],
+    })
+    expect(generic.transport.catalogManagedTaskKinds).toEqual([])
+  })
+
   it('states the current task-kind, mode-aware, and audio-capable custom-call boundary', () => {
     const result = projectModelCapability({
       model: model({ hasCustomCall: true }),

@@ -39,6 +39,7 @@ export function ModelAdapterStatusSection({
   hasTask,
   capabilityKnown,
   transportAvailable,
+  catalogManagedWire,
   starting,
   onStartAdapt,
   onOpenTask,
@@ -52,6 +53,7 @@ export function ModelAdapterStatusSection({
   hasTask: boolean
   capabilityKnown: boolean
   transportAvailable: boolean
+  catalogManagedWire?: boolean
   starting: boolean
   onStartAdapt: () => void
   onOpenTask: () => void
@@ -70,6 +72,7 @@ export function ModelAdapterStatusSection({
     canUseScript,
     capabilityKnown,
     transportAvailable,
+    catalogManagedWire,
   })
 
   const action = (() => {

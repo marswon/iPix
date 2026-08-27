@@ -5,6 +5,7 @@ import { NEWAPI_STATUS_MAPPING } from "./newapiTransport";
 import type { HttpOperation } from "./types";
 
 const REQUEST_TRANSFORM = "gettoken-seedance-frames";
+export const GETTOKEN_PRESET_REVISION = 2;
 
 const JSON_HEADERS = {
   Authorization: "Bearer {{user_api_key}}",
@@ -128,7 +129,11 @@ export const GETTOKEN_SEEDANCE_MODEL_SEED = {
   labelZh: "Seedance 2.0",
   kind: "video" as const,
   archetypeId: "volcengine-seedance-2",
-  meta: { wireProfile: "gettoken-seedance-2" },
+  meta: {
+    wireProfile: "gettoken-seedance-2",
+    catalogManagedWire: true,
+    catalogPresetRevision: GETTOKEN_PRESET_REVISION,
+  },
 };
 
 export const GETTOKEN_SEEDANCE_PROFILE: NativeWireProfile = {

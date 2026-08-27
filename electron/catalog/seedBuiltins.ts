@@ -71,7 +71,8 @@ import { CODEX_LOCAL_VENDOR_SEED, CODEX_IMAGE_CURATED_MODELS, CODEX_IMAGE_CURATE
 import { VOLCENGINE_IMAGE_MODELS } from "./volcengineImages";
 import { VOLCENGINE_AUDIO_MODELS } from "./volcengineAudios";
 import { VOLCENGINE_SEEDANCE_QUERY_OP, VOLCENGINE_SEEDANCE_STATUS_MAPPING, VOLCENGINE_VIDEO_MODELS } from "./volcengineVideos";
-import { GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
+import { GETTOKEN_PRESET_REVISION, GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
+import { catalogManagedWireHostMatches, catalogManagedWireIdentity, catalogManagedWireMappings } from "./catalogManagedWire";
 import { migrateGetTokenVendorAliases } from "./gettokenVendorMigration";
 
 /** curated 模型/mapping 的内部类型（reconcile 两函数的输入）。 */
@@ -490,12 +491,82 @@ function reconcileMappings(mappings: Mapping[], vendorKey: string, curated: Cura
   return changed;
 }
 
+function modelMeta(model: Model): Record<string, unknown> {
+  return model.meta && typeof model.meta === "object" && !Array.isArray(model.meta)
+    ? model.meta as Record<string, unknown>
+    : {};
+}
+
+function withoutAdapterMeta(meta: Record<string, unknown>): Record<string, unknown> {
+  const { adapter: _adapter, ...rest } = meta;
+  return rest;
+}
+
+/** Explicitly reconnect a code-managed provider without reviving stale generic-adapter failure state. */
+export function activateCatalogManagedCredential(state: CatalogState, vendorKey: string, now: string): boolean {
+  const managed = state.models.flatMap((model) => {
+    if (model.vendorKey !== vendorKey) return [];
+    const identity = catalogManagedWireIdentity(state, vendorKey, model.modelKey);
+    return identity && catalogManagedWireHostMatches(identity) ? [identity] : [];
+  });
+  if (managed.length === 0) return false;
+  let changed = false;
+  const vendor = state.vendors.find((candidate) => candidate.key === vendorKey);
+  if (vendor && !vendor.enabled) {
+    vendor.enabled = true;
+    vendor.updatedAt = now;
+    changed = true;
+  }
+  for (const identity of managed) {
+    const meta = modelMeta(identity.model);
+    if (!meta.adapter) continue;
+    identity.model.enabled = true;
+    identity.model.meta = withoutAdapterMeta(meta);
+    identity.model.updatedAt = now;
+    changed = true;
+    for (const mapping of catalogManagedWireMappings(state, identity, false)) {
+      if (!mapping.enabled) {
+        mapping.enabled = true;
+        mapping.updatedAt = now;
+      }
+    }
+  }
+  return changed;
+}
+
+function getTokenPresetNeedsRepair(state: CatalogState): boolean {
+  const credential = state.apiKeysByVendor?.[GETTOKEN_VENDOR_SEED.key];
+  if (!credential?.apiKey || credential.enabled === false) return false;
+  const model = state.models.find((candidate) =>
+    candidate.vendorKey === GETTOKEN_VENDOR_SEED.key && candidate.modelKey === GETTOKEN_SEEDANCE_MODEL_SEED.modelKey);
+  return Boolean(model && Number(modelMeta(model).catalogPresetRevision || 0) < GETTOKEN_PRESET_REVISION);
+}
+
+function repairGetTokenPresetAvailability(state: CatalogState, now: string): boolean {
+  const vendor = state.vendors.find((candidate) => candidate.key === GETTOKEN_VENDOR_SEED.key);
+  const model = state.models.find((candidate) =>
+    candidate.vendorKey === GETTOKEN_VENDOR_SEED.key && candidate.modelKey === GETTOKEN_SEEDANCE_MODEL_SEED.modelKey);
+  if (!vendor || !model) return false;
+  vendor.enabled = true;
+  vendor.updatedAt = now;
+  model.enabled = true;
+  model.meta = withoutAdapterMeta(modelMeta(model));
+  model.updatedAt = now;
+  for (const mapping of state.mappings) {
+    if (!GETTOKEN_CURATED_MAPPINGS.some((seed) => seed.id === mapping.id)) continue;
+    mapping.enabled = true;
+    mapping.updatedAt = now;
+  }
+  return true;
+}
+
 export function applyBuiltinSeeds(state: CatalogState, now: string): { state: CatalogState; changed: boolean } {
   const migrated = migrateGetTokenVendorAliases(state);
   const base = migrated.state;
   const vendors = [...base.vendors];
   const models = [...base.models];
   const mappings = [...base.mappings];
+  const repairGetTokenPreset = getTokenPresetNeedsRepair(base);
   let changed = migrated.changed;
 
   // 供应商：清单住在 builtinVendorSeeds.ts（单一真相源，deriveVendorKeyFromBaseUrl 的
@@ -561,6 +632,9 @@ export function applyBuiltinSeeds(state: CatalogState, now: string): { state: Ca
   if (reconcileMappings(mappings, COMFYUI_VENDOR_SEED.key, COMFYUI_CURATED_MAPPINGS, now)) changed = true;
   if (reconcileMappings(mappings, CODEX_LOCAL_VENDOR_SEED.key, CODEX_IMAGE_CURATED_MAPPINGS, now)) changed = true;
   if (reconcileMappings(mappings, GETTOKEN_VENDOR_SEED.key, GETTOKEN_CURATED_MAPPINGS, now)) changed = true;
+
+  const reconciled = { ...base, vendors, models, mappings };
+  if (repairGetTokenPreset && repairGetTokenPresetAvailability(reconciled, now)) changed = true;
 
   if (!changed) return { state, changed: false };
   return { state: { ...base, vendors, models, mappings }, changed: true };

@@ -1,3 +1,5 @@
+import { catalogManagedWireContract, catalogManagedWireIdentity } from "../catalog/catalogManagedWire";
+import { probeNativeEndpoint, type NativeEndpointProbeResult } from "../catalog/nativeEndpointProbe";
 import type { ApiKeyRecord } from "../catalog/secrets";
 import type {
   AiSdkProviderKind,
@@ -20,6 +22,8 @@ export type ExistingConnectionErrorCode =
   | "RUN_NOT_FOUND"
   | "RUN_ACTIVE"
   | "RUN_MODELS_MISSING"
+  | "CATALOG_WIRE_MANAGED"
+  | "CATALOG_WIRE_UNAVAILABLE"
   | "START_FAILED"
   | "REGISTER_FAILED";
 
@@ -81,6 +85,7 @@ export type ExistingConnectionRegisterResult =
   | PublicFailure;
 
 type ResolvedConnection = {
+  state: CatalogState;
   summary: ExistingConnectionSummary;
   baseUrl: string;
   vendor: Vendor;
@@ -109,6 +114,7 @@ export type ExistingConnectionActionsDependencies = {
     input: ExistingConnectionAdapterRegisterInput,
   ) => ProviderAdapterRegistration | Promise<ProviderAdapterRegistration>;
   getAdapterRun: (runId: string) => ProviderAdapterRun | undefined;
+  probeNativeEndpoint?: (baseUrl: string, probePath: string, apiKey?: string) => Promise<NativeEndpointProbeResult>;
   listTimeoutMs?: number;
 };
 
@@ -231,6 +237,7 @@ function resolveConnection(
     };
   }
   return {
+    state,
     summary,
     baseUrl,
     vendor,
@@ -333,6 +340,48 @@ async function startResolvedConnection(
       connection: connection.summary,
     };
   }
+}
+
+async function partitionCatalogManagedWires(
+  dependencies: ExistingConnectionActionsDependencies,
+  connection: ResolvedConnection,
+  models: readonly ExistingConnectionModel[],
+): Promise<{ models: ExistingConnectionModel[]; failure?: PublicFailure }> {
+  const classified = models.map((model) => ({
+    model,
+    identity: catalogManagedWireIdentity(connection.state, connection.vendor.key, model.modelKey),
+  }));
+  const regular = classified.filter((entry) => !entry.identity).map((entry) => entry.model);
+  const managed = classified.filter((entry) => entry.identity !== null);
+  if (managed.length === 0 || regular.length > 0) return { models: regular };
+
+  const contract = managed
+    .map((entry) => catalogManagedWireContract(connection.state, connection.vendor.key, entry.model.modelKey))
+    .find((candidate) => candidate !== null);
+  if (!contract) {
+    return {
+      models: [],
+      failure: {
+        ok: false,
+        code: "CATALOG_WIRE_UNAVAILABLE",
+        error: "The catalog-managed transport is incomplete; no generation task was created.",
+        connection: connection.summary,
+      },
+    };
+  }
+  const probe = dependencies.probeNativeEndpoint ?? probeNativeEndpoint;
+  const result = await probe(connection.baseUrl, contract.profile.probePath, connection.apiKey);
+  return {
+    models: [],
+    failure: {
+      ok: false,
+      code: result.exists ? "CATALOG_WIRE_MANAGED" : "CATALOG_WIRE_UNAVAILABLE",
+      error: result.exists
+        ? `This model already uses a verified catalog transport; automatic adaptation is not needed. ${result.detail}`
+        : `The verified catalog transport could not be reached safely; no generation task was created. ${result.detail}`,
+      connection: connection.summary,
+    },
+  };
 }
 
 async function registerResolvedConnection(
@@ -450,7 +499,9 @@ export function createExistingConnectionActions(
           connection: connection.summary,
         };
       }
-      return startResolvedConnection(dependencies, connection, selected);
+      const partitioned = await partitionCatalogManagedWires(dependencies, connection, selected);
+      if (partitioned.failure) return partitioned.failure;
+      return startResolvedConnection(dependencies, connection, partitioned.models);
     },
 
     async retry({ runId, modelKey }) {
@@ -481,7 +532,9 @@ export function createExistingConnectionActions(
           connection: connection.summary,
         };
       }
-      return startResolvedConnection(dependencies, connection, models);
+      const partitioned = await partitionCatalogManagedWires(dependencies, connection, models);
+      if (partitioned.failure) return partitioned.failure;
+      return startResolvedConnection(dependencies, connection, partitioned.models);
     },
   };
 }

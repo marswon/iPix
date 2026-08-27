@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { applyBuiltinSeeds } from "../catalog/seedBuiltins";
 import type { CatalogState, Model, Vendor } from "../catalog/types";
 import {
   createExistingConnectionActions,
@@ -75,6 +76,10 @@ function harness(state = catalog()) {
     updatedAt: "2026-08-15T00:00:00.000Z",
     connectionFingerprint: "fingerprint",
   }));
+  const probeNativeEndpoint = vi.fn<NonNullable<ExistingConnectionActionsDependencies["probeNativeEndpoint"]>>(async () => ({
+    exists: true,
+    detail: "target task route differs from sibling missing route",
+  }));
   const registerAdapter = vi.fn((input: ExistingConnectionAdapterRegisterInput) => ({
     vendorKey: input.vendorKey,
     vendorName: input.vendorName,
@@ -93,8 +98,9 @@ function harness(state = catalog()) {
     registerAdapter,
     startAdapter,
     getAdapterRun: () => undefined,
+    probeNativeEndpoint,
   });
-  return { actions, fetchModels, registerAdapter, startAdapter };
+  return { actions, fetchModels, registerAdapter, startAdapter, probeNativeEndpoint };
 }
 
 describe("existing connection model discovery", () => {
@@ -236,6 +242,71 @@ describe("existing connection save-first registration", () => {
       models: [{ modelKey: "already-there", labelZh: "already-there", kind: "image" }],
     }));
     expect(JSON.stringify(result)).not.toContain(SECRET);
+  });
+
+  it("guards a catalog-managed GetToken wire with GET-only probing instead of paid adaptation", async () => {
+    const state = applyBuiltinSeeds({ version: 10, vendors: [], models: [], mappings: [], apiKeysByVendor: {} }, "2026-08-28T00:00:00.000Z").state;
+    state.apiKeysByVendor.gettoken = {
+      vendorKey: "gettoken", apiKey: "encrypted-on-disk", enabled: true, enc: "safeStorage",
+      createdAt: "2026-08-28T00:00:00.000Z", updatedAt: "2026-08-28T00:00:00.000Z",
+    };
+    const { actions, startAdapter, probeNativeEndpoint } = harness(state);
+
+    const result = await actions.adapt({
+      vendorKey: "gettoken",
+      models: [{ modelKey: "doubao-seedance-2-0-260128", labelZh: "Renderer override", kind: "text" }],
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "CATALOG_WIRE_MANAGED" });
+    expect(probeNativeEndpoint).toHaveBeenCalledWith(
+      "https://www.gettoken.net",
+      "/v1/video/generations",
+      SECRET,
+    );
+    expect(startAdapter).not.toHaveBeenCalled();
+    expect(JSON.stringify(result)).not.toContain(SECRET);
+  });
+
+  it("never falls back to paid adaptation when a managed mapping is disabled", async () => {
+    const state = applyBuiltinSeeds({ version: 10, vendors: [], models: [], mappings: [], apiKeysByVendor: {} }, "2026-08-28T00:00:00.000Z").state;
+    state.apiKeysByVendor.gettoken = {
+      vendorKey: "gettoken", apiKey: "encrypted-on-disk", enabled: true, enc: "safeStorage",
+      createdAt: "2026-08-28T00:00:00.000Z", updatedAt: "2026-08-28T00:00:00.000Z",
+    };
+    for (const mapping of state.mappings) if (mapping.vendorKey === "gettoken") mapping.enabled = false;
+    const { actions, startAdapter, probeNativeEndpoint } = harness(state);
+
+    const result = await actions.adapt({
+      vendorKey: "gettoken",
+      models: [{ modelKey: "doubao-seedance-2-0-260128", kind: "video" }],
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "CATALOG_WIRE_UNAVAILABLE" });
+    expect(startAdapter).not.toHaveBeenCalled();
+    expect(probeNativeEndpoint).not.toHaveBeenCalled();
+  });
+
+  it("adapts only ordinary models from a mixed catalog-managed selection", async () => {
+    const state = applyBuiltinSeeds({ version: 10, vendors: [], models: [], mappings: [], apiKeysByVendor: {} }, "2026-08-28T00:00:00.000Z").state;
+    state.apiKeysByVendor.gettoken = {
+      vendorKey: "gettoken", apiKey: "encrypted-on-disk", enabled: true, enc: "safeStorage",
+      createdAt: "2026-08-28T00:00:00.000Z", updatedAt: "2026-08-28T00:00:00.000Z",
+    };
+    state.models.push({ ...model("ordinary-gettoken-model", "text"), vendorKey: "gettoken" });
+    const { actions, startAdapter } = harness(state);
+
+    const result = await actions.adapt({
+      vendorKey: "gettoken",
+      models: [
+        { modelKey: "doubao-seedance-2-0-260128", kind: "video" },
+        { modelKey: "ordinary-gettoken-model", kind: "text" },
+      ],
+    });
+
+    expect(result).toMatchObject({ ok: true, run: { selectedModelKeys: ["ordinary-gettoken-model"] } });
+    expect(startAdapter).toHaveBeenCalledWith(expect.objectContaining({
+      models: [expect.objectContaining({ modelKey: "ordinary-gettoken-model" })],
+    }));
   });
 });
 

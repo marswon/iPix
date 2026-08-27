@@ -6,7 +6,7 @@ import { writeJsonFileAtomic } from "../jsonFile";
 import { CATALOG_FILE, getSettingsRoot, readJson } from "../runtimePaths";
 import { type ApiKeyRecord, decryptApiKeyRecord, makeApiKeyRecordFromPlain } from "./secrets";
 import { humanizeModelKey } from "./modelLabel";
-import { applyBuiltinSeeds } from "./seedBuiltins";
+import { activateCatalogManagedCredential, applyBuiltinSeeds } from "./seedBuiltins";
 import { migrateRelayImageEditProtocols } from "./relayImageEditMigration";
 import { migrateRelayVideoImageToVideo } from "./relayVideoI2vMigration";
 import { migrateComfyWorkflowOutputs } from "./comfyuiWorkflowOutputMigration";
@@ -480,6 +480,7 @@ function applyApiKeyUpsert(state: CatalogState, vendorKey: string, payload: unkn
     ),
     ...(existing?.customConfig ? { customConfig: existing.customConfig } : {}),
   };
+  activateCatalogManagedCredential(state, key, t);
 }
 
 export function upsertModelCatalogVendorApiKey(vendorKey: string, payload: unknown): unknown {

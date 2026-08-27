@@ -69,6 +69,7 @@ export type ModelCapabilityProjection = {
   transport: {
     mappings: TransportMappingProjection[]
     verifiedTaskKinds: ProfileKind[]
+    catalogManagedTaskKinds: ProfileKind[]
   }
   customCall: {
     enabled: boolean
@@ -112,6 +113,17 @@ function verifiedAdapterTaskKinds(meta: unknown): ProfileKind[] {
     return mode?.state === 'verified' && isProfileKind(mode.taskKind) ? [mode.taskKind] : []
   })
   return sortTaskKinds(verified)
+}
+
+function catalogManagedTaskKinds(model: ChipModel, mappings: readonly TransportMappingProjection[]): ProfileKind[] {
+  const meta = asRecord(model.meta)
+  if (
+    meta?.catalogManagedWire !== true ||
+    Number(meta.catalogPresetRevision || 0) <= 0 ||
+    typeof meta.wireProfile !== 'string' ||
+    !meta.wireProfile.trim()
+  ) return []
+  return sortTaskKinds(mappings.filter((mapping) => mapping.scope === 'model').map((mapping) => mapping.taskKind))
 }
 
 function applicableMappings(model: ChipModel, mappings: readonly Mapping[]): TransportMappingProjection[] {
@@ -175,14 +187,16 @@ export function projectModelCapability(input: ProjectModelCapabilityInput): Mode
         vendorKey: model.vendorKey,
         meta: model.meta,
       })
+  const transportMappings = applicableMappings(model, input.mappings ?? [])
   return {
     source: archetype ? 'archetype' : 'transport-only',
     inputContract: archetype ? 'known' : 'unknown',
     modes: archetype ? capabilityModes(archetype) : [],
     parameters: parseModelParameterControls(model.meta),
     transport: {
-      mappings: applicableMappings(model, input.mappings ?? []),
+      mappings: transportMappings,
       verifiedTaskKinds: verifiedAdapterTaskKinds(model.meta),
+      catalogManagedTaskKinds: catalogManagedTaskKinds(model, transportMappings),
     },
     customCall: {
       enabled: input.hasCustomCall ?? Boolean(model.hasCustomCall),

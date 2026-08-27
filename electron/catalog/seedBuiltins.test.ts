@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { CatalogState } from "./types";
 import { selectTaskMapping } from "./types";
-import { applyBuiltinSeeds } from "./seedBuiltins";
+import { activateCatalogManagedCredential, applyBuiltinSeeds } from "./seedBuiltins";
 
 function emptyCatalog(): CatalogState {
   return { version: 3, vendors: [], models: [], mappings: [], apiKeysByVendor: {} };
@@ -50,6 +50,62 @@ describe("applyBuiltinSeeds", () => {
     expect(text?.create.path).toBe("/v1/video/generations");
     expect(image?.create.request_transform).toBe("gettoken-seedance-frames");
     expect(text?.query?.path).toBe("/v1/video/generations/{{providerMeta.task_id}}");
+  });
+
+  it("一次性修复有凭据的旧 GetToken 自检失败状态，之后仍尊重用户显式停用", () => {
+    const first = applyBuiltinSeeds(emptyCatalog(), NOW).state;
+    const vendor = first.vendors.find((candidate) => candidate.key === "gettoken")!;
+    const model = first.models.find((candidate) => candidate.vendorKey === "gettoken")!;
+    vendor.enabled = false;
+    model.enabled = false;
+    model.meta = {
+      ...(model.meta || {}),
+      catalogPresetRevision: 1,
+      adapter: { state: "failed", runId: "old-paid-check" },
+    };
+    for (const mapping of first.mappings) if (mapping.vendorKey === "gettoken") mapping.enabled = false;
+    first.apiKeysByVendor.gettoken = {
+      vendorKey: "gettoken", apiKey: "ciphertext", enc: "plain", enabled: true, createdAt: NOW, updatedAt: NOW,
+    };
+
+    const repaired = applyBuiltinSeeds(first, NOW).state;
+    const repairedModel = repaired.models.find((candidate) => candidate.vendorKey === "gettoken")!;
+    expect(repaired.vendors.find((candidate) => candidate.key === "gettoken")?.enabled).toBe(true);
+    expect(repairedModel.enabled).toBe(true);
+    expect(repairedModel.meta).toMatchObject({ catalogPresetRevision: 2, catalogManagedWire: true });
+    expect((repairedModel.meta as Record<string, unknown>).adapter).toBeUndefined();
+    expect(repaired.mappings.filter((mapping) => mapping.vendorKey === "gettoken").every((mapping) => mapping.enabled)).toBe(true);
+
+    repairedModel.enabled = false;
+    expect(applyBuiltinSeeds(repaired, NOW).state.models.find((candidate) => candidate.vendorKey === "gettoken")?.enabled).toBe(false);
+  });
+
+  it("显式重连托管服务时清理适配器污染，但不复活普通用户停用", () => {
+    const state = applyBuiltinSeeds(emptyCatalog(), NOW).state;
+    const vendor = state.vendors.find((candidate) => candidate.key === "gettoken")!;
+    const model = state.models.find((candidate) => candidate.vendorKey === "gettoken")!;
+    vendor.enabled = false;
+    model.enabled = false;
+    model.meta = { ...(model.meta || {}), adapter: { state: "failed", runId: "stale-run" } };
+    expect(activateCatalogManagedCredential(state, "gettoken", NOW)).toBe(true);
+    expect(vendor.enabled).toBe(true);
+    expect(model.enabled).toBe(true);
+    expect((model.meta as Record<string, unknown>).adapter).toBeUndefined();
+
+    model.enabled = false;
+    expect(activateCatalogManagedCredential(state, "gettoken", NOW)).toBe(false);
+    expect(model.enabled).toBe(false);
+
+    const wrongHost = applyBuiltinSeeds(emptyCatalog(), NOW).state;
+    const wrongVendor = wrongHost.vendors.find((candidate) => candidate.key === "gettoken")!;
+    const wrongModel = wrongHost.models.find((candidate) => candidate.vendorKey === "gettoken")!;
+    wrongVendor.baseUrlHint = "https://relay.example.com";
+    wrongVendor.enabled = false;
+    wrongModel.enabled = false;
+    wrongModel.meta = { ...(wrongModel.meta || {}), adapter: { state: "failed" } };
+    expect(activateCatalogManagedCredential(wrongHost, "gettoken", NOW)).toBe(false);
+    expect(wrongVendor.enabled).toBe(false);
+    expect(wrongModel.enabled).toBe(false);
   });
 
   it("空目录：补齐 HappyHorse 模型 + (kie, text_to_video) mapping（C4）", () => {

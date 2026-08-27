@@ -35,7 +35,19 @@ The v0.21 upstream release also changed Seedance profile derivation and fixed fr
 
 ## Post-install Evidence
 
-A packaged Preview configured through the generic relay flow normalized the create response to `id=13`, then received `HTTP 400 task_not_exist` from `GET /v1/video/generations/13`. This establishes that the single generic verification attempt failed, but the screenshot does not retain the raw create response or timing, so it cannot diagnose task-id shape versus an upstream visibility race. Do not speculate by removing supported response paths. Because this is an independently verified preset contract, its onboarding should not depend on a paid generic create/poll check; users enter only their key.
+A packaged Preview configured through the generic relay flow normalized the create response to `id=13`, then received `HTTP 400 task_not_exist` from `GET /v1/video/generations/13`. A second packaged Preview repeated the same failure with `id=15`. The screenshots do not retain the raw create response, so they cannot establish where a different provider task handle lives. They do establish that an arbitrary numeric top-level `id` is not queryable in these runs.
+
+The reference skill distinguishes a genuine GetToken provider handle (`task_...`) from local/envelope identifiers. More importantly, its documented zero-cost route check sends an invalid request that cannot create a task. Nomi must not use a paid create/poll cycle to verify this already-curated contract.
+
+## Corrective Design
+
+1. Treat a model as a catalog-managed wire only when trusted catalog state has all three facts: a registered `wireProfile`, an exact enabled model mapping matching that profile, and a saved base URL accepted by the profile host matcher. A host, model name, or arbitrary user mapping alone is not verification evidence.
+2. For catalog-managed wires, connection health uses `probeNativeEndpoint`: sibling missing-route GET plus target bogus-task GET. `task_not_exist` for `__nomi_probe__` is positive route evidence because no task was created; it is never shown as a failed generation.
+3. Block the persisted-connection provider-adapter boundary from staging or retrying catalog-managed models. This guarantees direct IPC and stale retry paths cannot reach docs compilation, paid create, or polling even if renderer state is stale.
+4. Project catalog-managed readiness separately from `meta.adapter`. The model detail uses the existing ready state and exposes no generic auto-configure action. Stale adapter failure metadata cannot override a code-owned production mapping.
+5. Add a one-time GetToken preset repair revision. When a usable GetToken credential already exists, clear stale adapter ownership and re-enable the canonical Seedance model and curated mappings once. Later explicit user disables remain respected because the repair revision prevents repeated activation.
+6. On explicit key-only connection, atomically enable the canonical vendor and repair stale adapter-disabled curated rows before refreshing canvas options. Saving a key and becoming selectable are one domain operation, not two renderer writes.
+7. Keep canvas filtering strict (`vendor enabled` + `credential enabled` + `model enabled`). The repair fixes catalog truth; the picker does not bypass readiness.
 
 ## Non-goals
 

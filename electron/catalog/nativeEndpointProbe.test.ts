@@ -18,6 +18,11 @@ beforeAll(async () => {
       res.end(JSON.stringify({ error: { message: "Invalid token (request id: abc123)", type: "new_api_error" } }));
       return;
     }
+    if (url === "/v1/video/generations/__nomi_probe__") {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: { message: "task_not_exist", type: "gettoken_error" } }));
+      return;
+    }
     if (url.startsWith("/v1/video/generations")) {
       res.writeHead(401, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: { message: "Invalid token (request id: def456)", type: "new_api_error" } }));
@@ -57,9 +62,10 @@ describe("probeNativeEndpoint", () => {
     expect(r.exists).toBe(true);
   });
 
-  it("同一台机器上的 OpenAI 兼容端点同样判存在", async () => {
-    const r = await probeNativeEndpoint(base, "/v1/video/generations");
+  it("把假 task id 的 task_not_exist 识别为路由存在，而不是生成失败", async () => {
+    const r = await probeNativeEndpoint(base, "/v1/video/generations", "valid-key");
     expect(r.exists).toBe(true);
+    expect(r.detail).toContain("HTTP 400");
   });
 
   it("地址不是 http(s) → 不探，判不支持", async () => {

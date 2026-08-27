@@ -232,6 +232,7 @@ export function ModelWorkspacePage({
   const capability = projectModelCapability({ model, mappings })
   const capabilityKnown = model.kind === 'text' || capability.inputContract === 'known'
   const transportAvailable = model.kind === 'text' || capability.customCall.enabled || capability.transport.mappings.length > 0
+  const catalogManagedWire = capability.transport.catalogManagedTaskKinds.length > 0
   const readyForCanvas = capabilityKnown && transportAvailable
   const switchLocked = connection?.enabledLocked ?? Boolean(enabledLocked || !readyForCanvas)
   return (
@@ -247,12 +248,13 @@ export function ModelWorkspacePage({
           <div className="flex flex-col gap-5">
             {connection?.status ?? <ModelAdapterStatusSection
               model={model}
-              canAutoAdapt={canAutoAdapt}
+              canAutoAdapt={canAutoAdapt && !catalogManagedWire}
               canUseScript={canUseScript}
               hasActiveRun={hasActiveRun}
               hasTask={hasTask}
               capabilityKnown={capabilityKnown}
               transportAvailable={transportAvailable}
+              catalogManagedWire={catalogManagedWire}
               starting={adaptStarting}
               onStartAdapt={onStartAdapt}
               onOpenTask={onOpenTask}

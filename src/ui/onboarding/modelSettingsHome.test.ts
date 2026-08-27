@@ -69,6 +69,14 @@ describe('model settings home', () => {
       state: 'verified',
       ready: 1,
     })
+
+    const managed = {
+      ...configured,
+      adapterState: 'failed' as const,
+      meta: { ...(configured.meta || {}), catalogManagedWire: true, catalogPresetRevision: 2, wireProfile: 'gettoken-seedance-2' },
+    }
+    expect(resolveModelHomeStatus(managed, mapping)).toBe('verified')
+    expect(summarizeModelHomeConnection([managed], mapping)).toMatchObject({ state: 'verified', ready: 1, needsSetup: 0 })
   })
 
   it('uses the Nomi primitives and keeps the direct-script action inside the advanced section', () => {

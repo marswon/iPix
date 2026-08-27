@@ -61,6 +61,31 @@ describe('toCatalogModelOptions — 同名 modelKey 跨厂商不互吞', () => {
     const options = toCatalogModelOptions([dto('gpt-image-2', 'relay-a'), dto('gpt-image-2', 'relay-a')])
     expect(options).toHaveLength(1)
   })
+
+  it('GetToken Seedance survives canvas projection and joins the canonical provider group', () => {
+    const options = toCatalogModelOptions([
+      {
+        ...dto('doubao-seedance-2-0-260128', 'gettoken', 'Seedance 2.0'),
+        kind: 'video',
+        meta: {
+          archetypeId: 'volcengine-seedance-2',
+          canonicalModelId: 'seedance 2.0',
+          wireProfile: 'gettoken-seedance-2',
+          catalogManagedWire: true,
+          catalogPresetRevision: 2,
+        },
+      },
+      {
+        ...dto('jimeng-video-3.0', 'dreamina', 'Seedance 2.0'),
+        kind: 'video',
+        meta: { canonicalModelId: 'seedance 2.0' },
+      },
+    ])
+    const grouped = dedupeModelOptions(options)
+    expect(grouped).toHaveLength(1)
+    expect(grouped[0].providers.map((provider) => provider.vendor)).toEqual(['gettoken', 'dreamina'])
+    expect(grouped[0].providers[0].option.meta).toMatchObject({ wireProfile: 'gettoken-seedance-2' })
+  })
 })
 
 describe('findModelOptionByIdentifier — vendor 二次寻址', () => {

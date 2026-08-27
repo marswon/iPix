@@ -112,6 +112,22 @@ describe('model adapter detail state', () => {
     })
   })
 
+  it('lets a catalog-managed wire outrank stale generic adapter failure without exposing auto-configure', () => {
+    expect(resolveModelAdapterDetailState({
+      kind: 'video',
+      enabled: true,
+      adapterState: 'failed',
+      hasCustomCall: false,
+      hasActiveRun: false,
+      hasTask: true,
+      canAutoAdapt: true,
+      canUseScript: true,
+      capabilityKnown: true,
+      transportAvailable: true,
+      catalogManagedWire: true,
+    })).toEqual({ tone: 'success', state: 'readyVerified', primaryAction: 'none', secondaryAction: 'none' })
+  })
+
   it('shows no primary action for a fully verified model', () => {
     expect(resolveModelAdapterDetailState({
       kind: 'video',

@@ -11,6 +11,7 @@ type ModelAdapterDetailInput = {
   canUseScript: boolean
   capabilityKnown: boolean
   transportAvailable: boolean
+  catalogManagedWire?: boolean
 }
 
 export type ModelAdapterDetailState = {
@@ -28,6 +29,9 @@ export type ModelAdapterDetailState = {
 }
 
 export function resolveModelAdapterDetailState(input: ModelAdapterDetailInput): ModelAdapterDetailState {
+  if (input.catalogManagedWire && input.capabilityKnown && input.transportAvailable) {
+    return { tone: 'success', state: 'readyVerified', primaryAction: 'none', secondaryAction: 'none' }
+  }
   if (input.hasActiveRun || input.adapterState === 'testing') {
     return {
       tone: 'active',

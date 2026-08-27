@@ -6,13 +6,17 @@ export type ModelHomeStatus = 'working' | 'verified' | 'ready' | 'needsSetup' | 
 export type ModelHomeConnectionState = 'working' | 'verified' | 'attention' | 'disabled'
 
 export function resolveModelHomeStatus(model: ChipModel, mappings: readonly Mapping[]): ModelHomeStatus {
-  if (model.adapterState === 'testing') return 'working'
-  if (model.adapterState === 'failed') return 'failed'
-  if (model.customCallDraft) return 'needsSetup'
-
   const capability = projectModelCapability({ model, mappings })
   const capabilityKnown = model.kind === 'text' || capability.inputContract === 'known'
   const transportAvailable = model.kind === 'text' || capability.customCall.enabled || capability.transport.mappings.length > 0
+  const catalogManagedWire = capability.transport.catalogManagedTaskKinds.length > 0
+  if (catalogManagedWire) {
+    if (!capabilityKnown || !transportAvailable) return 'needsSetup'
+    return model.enabled ? 'verified' : 'disabled'
+  }
+  if (model.adapterState === 'testing') return 'working'
+  if (model.adapterState === 'failed') return 'failed'
+  if (model.customCallDraft) return 'needsSetup'
   if (!capabilityKnown || !transportAvailable) return 'needsSetup'
   if (!model.enabled) return 'disabled'
   if (model.adapterState === 'verified') return 'verified'
