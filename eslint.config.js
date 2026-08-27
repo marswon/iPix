@@ -15,6 +15,9 @@ export default tseslint.config(
       'dist/**',
       'dist-electron/**',
       'release/**',
+      // R0 历史兼容探针产物保留；正式 pi 源码在 electron/harness/runtime/pi 参加 lint。
+      'experiments/pi-agent-runtime/dist/**',
+      'experiments/pi-agent-runtime/release/**',
       'node_modules/**',
       // Vite 预打包依赖缓存（vite.config cacheDir = .tmp/vite）——第三方 bundle，非源码，不 lint。
       '.tmp/**',
@@ -35,13 +38,29 @@ export default tseslint.config(
       '.claude/**',
       '.hermes/**',
       'skills/**',
+      // design-sync（组件库同步）：.ds-sync 是外部技能暂存的转换器脚本、ds-bundle 是它的构建产物、
+      // .design-sync/support 是本地构建脚本+压平后的 CSS——三者都 gitignored，是构建工具不是产品源码，不 lint。
+      // （.design-sync/previews/ 是手写的预览组合，走 tsx，保持被 lint。）
+      '.ds-sync/**',
+      'ds-bundle/**',
+      '.design-sync/support/**',
       '**/*.config.{js,ts,mjs,cjs}',
     ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['tests/network/**/*.{cjs,mjs}'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    // The regression must enter through Electron CommonJS before loading the
+    // native pi ESM island; require is intentional here, not application style.
+    files: ['tests/network/**/*.cjs'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
+    files: ['**/*.{ts,tsx,mts,cts}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
