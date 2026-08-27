@@ -1,5 +1,6 @@
 import { VOLCENGINE_SEEDANCE_QUERY_OP, VOLCENGINE_SEEDANCE_STATUS_MAPPING, VOLCENGINE_VIDEO_MODELS } from "./volcengineVideos";
 import { VOLCENGINE_IMAGE_MODELS } from "./volcengineImages";
+import { GETTOKEN_SEEDANCE_PROFILE } from "./gettokenSeedance";
 import type { HttpOperation, ProfileKind } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -18,6 +19,8 @@ import type { HttpOperation, ProfileKind } from "./types";
 // ---------------------------------------------------------------------------
 
 export type NativeWireProfile = {
+  /** 传输配方身份。缺省与 archetypeId 相同；同一模型档案有多条 wire 时必须显式区分。 */
+  id?: string;
   /** 命中哪个档案（src/config/modelArchetypes 的 archetype.id）。 */
   archetypeId: string;
   /** 拼进 mapping.name 的渠道名（与内置种子的中文 name 同性质，非 UI 文案）。 */
@@ -27,12 +30,18 @@ export type NativeWireProfile = {
    * 用 GET 探（不产生任务、不计费）。
    */
   probePath: string;
+  /** 服务商扩展 wire 的适用边界，防止把私有 metadata 发给其它同路由中转。 */
+  matchesBaseUrl?: (baseUrl: string) => boolean;
   /** 按 taskKind 的 create op。 */
   create: Partial<Record<ProfileKind, HttpOperation>>;
   /** 轮询 op（异步任务）。 */
   query?: HttpOperation;
   statusMapping?: Record<string, string[]>;
 };
+
+export function nativeWireProfileId(profile: NativeWireProfile): string {
+  return profile.id || profile.archetypeId;
+}
 
 /** 把一组 mapping 转成「从主机根拼」的 create 表。原生端点不在 /v1 命名空间下；
  *  中转用户常把地址填成 .../v1 → 必须从主机根拼（hostRootJoin 负责剥版本段 + 折叠重叠段）。 */
@@ -88,16 +97,39 @@ function volcengineSeedreamProfiles(): NativeWireProfile[] {
   }));
 }
 
-const PROFILES: NativeWireProfile[] = [...volcengineSeedanceProfiles(), ...volcengineSeedreamProfiles()];
+const NATIVE_PROFILES: NativeWireProfile[] = [
+  ...volcengineSeedanceProfiles(),
+  ...volcengineSeedreamProfiles(),
+];
 
-/** 按档案 id 查原生 wire 配方；没有就返回 null（该模型没有可复用的原生形状）。 */
+// 同一模型可有多条已验证 wire。顺序就是优先级：厂商原生优先，服务商扩展其次。
+const PROFILES: NativeWireProfile[] = [...NATIVE_PROFILES, GETTOKEN_SEEDANCE_PROFILE];
+
+/** 按档案 id 查首选 wire；无网络上下文的旧调用保持厂商原生优先。 */
 export function nativeWireProfileForArchetype(archetypeId: string | null | undefined): NativeWireProfile | null {
-  const id = String(archetypeId || "").trim();
-  if (!id) return null;
-  return PROFILES.find((p) => p.archetypeId === id) ?? null;
+  return nativeWireProfilesForArchetype(archetypeId)[0] ?? null;
 }
 
-/** 全部配方（探测/自愈遍历用）。 */
+/** 接入和启动迁移按优先级探测同一模型档案可用的 wire。 */
+export function nativeWireProfilesForArchetype(archetypeId: string | null | undefined): NativeWireProfile[] {
+  const id = String(archetypeId || "").trim();
+  if (!id) return [];
+  return PROFILES.filter((profile) => profile.archetypeId === id);
+}
+
+/** 已落库的 meta.wireProfile 用独立 id 精确找回 transport，不能退化成模型档案猜测。 */
+export function nativeWireProfileById(profileId: string | null | undefined): NativeWireProfile | null {
+  const id = String(profileId || "").trim();
+  if (!id) return null;
+  return PROFILES.find((profile) => nativeWireProfileId(profile) === id) ?? null;
+}
+
+/** 全部厂商原生配方（host-root 拼接不变量测试用）。 */
 export function listNativeWireProfiles(): NativeWireProfile[] {
+  return NATIVE_PROFILES;
+}
+
+/** 全部已验证 wire（含服务商扩展）；跨 profile 身份和完整性测试用。 */
+export function listVerifiedWireProfiles(): NativeWireProfile[] {
   return PROFILES;
 }

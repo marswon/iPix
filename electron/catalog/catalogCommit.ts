@@ -2,7 +2,7 @@ import { firstString, isJsonRecord, nowIso, trim, type JsonRecord } from "../jso
 import { humanizeModelKey } from "./modelLabel";
 import { newapiImageEditProfileForModel, newapiTransportFor, type NewapiImageEditProtocol } from "./newapiTransport";
 import { consumedCanonicalKeys } from "./paramTranslate";
-import { nativeWireProfileForArchetype, type NativeWireProfile } from "./nativeWireProfiles";
+import { nativeWireProfileById, nativeWireProfileId, type NativeWireProfile } from "./nativeWireProfiles";
 import { guessModelKind } from "./modelKindHeuristic";
 import { builtinVendorKeyForHostname } from "./builtinVendorSeeds";
 import { hardenedFetchText } from "../hardenedFetch";
@@ -160,6 +160,7 @@ export function commitOnboardedModelToCatalog(payload: {
   // 这个模型实际用的是哪套 wire：命中原生报文时记档案 id，否则通用 new-api 模板。诚实标注，
   // 排障与「这条路发不发得出某个参考」的护栏都读它。
   const wireProfileId = typeof draft.wireProfileId === "string" ? draft.wireProfileId : undefined;
+  const modelArchetypeId = typeof draft.modelArchetypeId === "string" ? draft.modelArchetypeId : wireProfileId;
   // 协议判定：multipart 与 xai-json 都落 /images/edits，靠 op.multipart 分辨（multipart 描述符=二进制文件上传）。
   const imageEditProtocol = targetKind === "image" && mappingEdit
     ? (mappingEdit.multipart
@@ -216,7 +217,8 @@ export function commitOnboardedModelToCatalog(payload: {
         parameters: metaParameters,
         // 走原生报文 = 这个模型确实就是那个档案：标上 archetypeId，headless/MCP 缺参才有档案默认可兜
         // （UI 路本来就由档案驱动、不受影响）。wireProfile 则记「这条 wire 是哪套」，供护栏与排障读。
-        ...(wireProfileId ? { wireProfile: wireProfileId, archetypeId: wireProfileId } : {}),
+        ...(wireProfileId ? { wireProfile: wireProfileId } : {}),
+        ...(modelArchetypeId ? { archetypeId: modelArchetypeId } : {}),
         ...(billingKind === "image" ? { imageOptions: {
           supportsReferenceImages: Boolean(mappingEdit),
           ...(imageEditProtocol ? { imageEditProtocol } : {}),
@@ -369,6 +371,8 @@ export function draftShapeForKind(
   mappingStatus?: Record<string, string[]>;
   /** 落 model.meta：这个模型实际用的是哪套 wire（诚实标注，护栏与排障都读它）。 */
   wireProfileId?: string;
+  /** wire 与模型档案身份可不同（GetToken wire 仍属于 volcengine-seedance-2）。 */
+  modelArchetypeId?: string;
 } {
   // 原生报文优先：命中档案且这家真提供该端点 → 复用已验证的完整形状（首尾帧/角色图/参考视频/
   // 参考音频/generate_audio 全在），只换地址。通用做法，不是给某一家打补丁。
@@ -385,7 +389,8 @@ export function draftShapeForKind(
         ...(i2v ? { mappingImageToVideo: i2v } : {}),
         ...(nativeProfile.query ? { mappingQuery: nativeProfile.query } : {}),
         ...(nativeProfile.statusMapping ? { mappingStatus: nativeProfile.statusMapping } : {}),
-        wireProfileId: nativeProfile.archetypeId,
+        wireProfileId: nativeWireProfileId(nativeProfile),
+        modelArchetypeId: nativeProfile.archetypeId,
       };
     }
   }
@@ -401,7 +406,8 @@ export function draftShapeForKind(
         modelFields: [],
         mappingCreate: create,
         ...(edit ? { mappingEdit: edit } : {}),
-        wireProfileId: nativeProfile.archetypeId,
+        wireProfileId: nativeWireProfileId(nativeProfile),
+        modelArchetypeId: nativeProfile.archetypeId,
       };
     }
   }
@@ -445,8 +451,8 @@ export function commitManualOpenAiCompatibleModels(payload: {
     displayName?: string;
     kind?: "text" | "image" | "video" | "audio" | "model3d";
     imageEditProtocol?: NewapiImageEditProtocol;
-    /** 探测确认这家提供该档案原生端点时由 onboardingIpc 传入 → 用原生完整报文替代通用最小模板。 */
-    nativeWireArchetypeId?: string;
+    /** onboardingIpc 探测确认的 wire 配方 id；模型档案身份由配方自身携带。 */
+    wireProfileId?: string;
   }>;
   /** Endpoint shape. Defaults to "openai-compatible" (the common case). "anthropic"
    *  routes text/chat through the Messages API (createAnthropic, x-api-key). */
@@ -493,7 +499,7 @@ export function commitManualOpenAiCompatibleModels(payload: {
         displayName: String(m?.displayName || "").trim(),
         kind: (k === "image" || k === "video" || k === "text" || k === "audio" || k === "model3d" ? k : guessModelKind(id)) as "text" | "image" | "video" | "audio" | "model3d",
         imageEditProtocol: m?.imageEditProtocol,
-        nativeWireArchetypeId: m?.nativeWireArchetypeId,
+        wireProfileId: m?.wireProfileId,
       };
     })
     .filter((m) => {
@@ -507,7 +513,7 @@ export function commitManualOpenAiCompatibleModels(payload: {
   for (const m of cleanModels) {
     const displayName = m.displayName || humanizeModelKey(m.id);
     // 图片/视频走 new-api 标准传输模板（per-model kind）；文本不带 mapping（chat 直连）。
-    const shape = draftShapeForKind(m.kind, m.id, m.imageEditProtocol, nativeWireProfileForArchetype(m.nativeWireArchetypeId));
+    const shape = draftShapeForKind(m.kind, m.id, m.imageEditProtocol, nativeWireProfileById(m.wireProfileId));
     const outcome = {
       status: "success",
       trialId: "",
@@ -529,6 +535,7 @@ export function commitManualOpenAiCompatibleModels(payload: {
         ...(shape.mappingQuery ? { mappingQuery: shape.mappingQuery } : {}),
         ...(shape.mappingStatus ? { mappingStatus: shape.mappingStatus } : {}),
         ...(shape.wireProfileId ? { wireProfileId: shape.wireProfileId } : {}),
+        ...(shape.modelArchetypeId ? { modelArchetypeId: shape.modelArchetypeId } : {}),
       },
     };
     commitOnboardedModelToCatalog({ outcome, userApiKey: apiKey, addedVia: "manual" });

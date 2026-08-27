@@ -102,19 +102,21 @@ export function registerOnboardingIpc(): void {
       // 原生报文探测（每个 probePath 只探一次，结果在本次提交内复用）：模型命中内置档案且这家中转
       // 真提供该档案的原生端点 → 用那份完整报文而不是通用最小模板。探测只发 GET、不建任务、不计费。
       const { archetypeIdForModel } = await import("../../catalog/archetypeIdentity");
-      const { nativeWireProfileForArchetype } = await import("../../catalog/nativeWireProfiles");
+      const { nativeWireProfileId, nativeWireProfilesForArchetype } = await import("../../catalog/nativeWireProfiles");
       const { probeNativeEndpoint } = await import("../../catalog/nativeEndpointProbe");
       const nativeProbeCache = new Map<string, Promise<boolean>>();
-      const nativeArchetypeIdFor = async (id: string): Promise<string | undefined> => {
+      const wireProfileIdFor = async (id: string): Promise<string | undefined> => {
         const archetypeId = archetypeIdForModel(id);
-        const profile = nativeWireProfileForArchetype(archetypeId);
-        if (!profile) return undefined;
-        let pending = nativeProbeCache.get(profile.probePath);
-        if (!pending) {
-          pending = probeNativeEndpoint(baseUrl, profile.probePath, apiKey).then((r) => r.exists).catch(() => false);
-          nativeProbeCache.set(profile.probePath, pending);
+        for (const profile of nativeWireProfilesForArchetype(archetypeId)) {
+          if (profile.matchesBaseUrl && !profile.matchesBaseUrl(baseUrl)) continue;
+          let pending = nativeProbeCache.get(profile.probePath);
+          if (!pending) {
+            pending = probeNativeEndpoint(baseUrl, profile.probePath, apiKey).then((r) => r.exists).catch(() => false);
+            nativeProbeCache.set(profile.probePath, pending);
+          }
+          if (await pending) return nativeWireProfileId(profile);
         }
-        return (await pending) ? profile.archetypeId : undefined;
+        return undefined;
       };
       const models = await Promise.all(rawModels.map(async (m) => {
         const id = String(m?.id || "");
@@ -124,14 +126,14 @@ export function registerOnboardingIpc(): void {
         const explicit = typeof m?.imageEditProtocol === "string" ? (m.imageEditProtocol as "chat-completions-image-url" | "xai-json-edits" | "openai-multipart-edits") : undefined;
         const effectiveKind = kind || (id ? guessModelKind(id) : undefined);
         if (effectiveKind === "video" && id) {
-          const nativeWireArchetypeId = await nativeArchetypeIdFor(id);
-          return { id, displayName, kind, ...(nativeWireArchetypeId ? { nativeWireArchetypeId } : {}) };
+          const wireProfileId = await wireProfileIdFor(id);
+          return { id, displayName, kind, ...(wireProfileId ? { wireProfileId } : {}) };
         }
         if (effectiveKind !== "image" || !id) return { id, displayName, kind };
         // 图像同样探原生报文。命中就直接用，**并跳过改图协议探测**——原生自带 image_edit op，而
         // chat/completions 那条路对 Seedream 这类非聊天模型本来就是错的（改图不按原图甚至直接失败）。
-        const nativeImageArchetypeId = await nativeArchetypeIdFor(id);
-        if (nativeImageArchetypeId) return { id, displayName, kind, nativeWireArchetypeId: nativeImageArchetypeId };
+        const imageWireProfileId = await wireProfileIdFor(id);
+        if (imageWireProfileId) return { id, displayName, kind, wireProfileId: imageWireProfileId };
         if (explicit) return { id, displayName, kind, imageEditProtocol: explicit };
         if (smartDefaultImageEditProtocol(id) !== "chat-completions-image-url") return { id, displayName, kind };
         const controller = new AbortController();

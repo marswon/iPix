@@ -25,7 +25,7 @@
  */
 import { mutateCatalog, readCatalog } from "./catalogStore";
 import { draftShapeForKind, primaryTaskKindForModelKind } from "./catalogCommit";
-import { nativeWireProfileForArchetype } from "./nativeWireProfiles";
+import { nativeWireProfileById, nativeWireProfileForArchetype } from "./nativeWireProfiles";
 import { isJsonRecord, type JsonRecord } from "../jsonUtils";
 import type { BillingModelKind, Model } from "./types";
 
@@ -64,10 +64,12 @@ export function retypeModelCatalogModel(payload: unknown): RetypeModelResult {
   // 逐个 `if (create)` 判，取不到就退回通用 new-api 模板——所以这里原样传过去是安全的。
   const meta = isJsonRecord(existing.meta) ? existing.meta : undefined;
   const archetypeId = typeof meta?.archetypeId === "string" ? meta.archetypeId : undefined;
+  const wireProfileId = typeof meta?.wireProfile === "string" ? meta.wireProfile : undefined;
   const imageEditProtocol = isJsonRecord(meta?.imageOptions)
     ? (meta.imageOptions.imageEditProtocol as never)
     : undefined;
-  const shape = draftShapeForKind(kind, modelKey, imageEditProtocol, nativeWireProfileForArchetype(archetypeId));
+  const nativeProfile = nativeWireProfileById(wireProfileId) ?? nativeWireProfileForArchetype(archetypeId);
+  const shape = draftShapeForKind(kind, modelKey, imageEditProtocol, nativeProfile);
   const taskKind = primaryTaskKindForModelKind(kind);
   const label = existing.labelZh || modelKey;
 
