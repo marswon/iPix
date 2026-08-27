@@ -171,8 +171,12 @@ async function executeTaskQuery(taskId: string, cached: CachedTask): Promise<{ v
         ...cached,
         raw: executed.response,
         providerMeta: {
-          ...(cached.providerMeta || {}),
           ...normalized.providerMeta,
+          ...(cached.providerMeta || {}),
+          // The provider handle accepted at create is immutable. Query envelopes may expose
+          // unrelated row ids; never let a later response redirect the next poll.
+          query_id: cached.providerMeta?.query_id || normalized.providerMeta.query_id || taskId,
+          task_id: cached.providerMeta?.task_id || normalized.providerMeta.task_id || taskId,
         },
         // 必须显式回写：认得的动词会让 streak 变 undefined，靠 ...cached 会把旧连击带回来。
         unrecognizedStatusStreak: streak,

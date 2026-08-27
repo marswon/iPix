@@ -5,6 +5,8 @@ import {
   readCatalog,
 } from "../catalog/catalogStore";
 import { decryptApiKeyRecord } from "../catalog/secrets";
+import { resolveCredentialScopedVendorKey } from "../catalog/credentialScopedVendor";
+import { NEWAPI_IMAGE_CREATE_OP } from "../catalog/newapiTransport";
 import type { BillingModelKind, Mapping, Model, ProfileKind, Vendor } from "../catalog/types";
 import { humanizeModelKey } from "../catalog/modelLabel";
 import { adapterModelMetadataForPromotion } from "./promotionMeta";
@@ -24,7 +26,8 @@ export type LoadedConnection = {
 };
 
 export type ProviderAdapterCatalogPort = {
-  register(input: ProviderAdapterRegisterInput & { vendorKey: string; savedAt: string }): { vendor: Vendor; models: Model[] };
+  resolveRegistrationVendorKey?(input: ProviderAdapterRegisterInput & { derivedVendorKey: string }): string;
+  register(input: ProviderAdapterRegisterInput & { vendorKey: string; savedAt: string; credentialScopedIdentity?: boolean }): { vendor: Vendor; models: Model[] };
   stage(input: ProviderAdapterStartInput & { vendorKey: string; runId: string }): { vendor: Vendor; models: Model[] };
   load(vendorKey: string, selectedModelKeys: readonly string[]): LoadedConnection | null;
   promote(input: {
@@ -38,6 +41,16 @@ export type ProviderAdapterCatalogPort = {
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function isVerifiedGetTokenImageModel(baseUrl: string, modelKey: string): boolean {
+  try {
+    const endpoint = new URL(baseUrl);
+    return endpoint.protocol === "https:" && endpoint.hostname === "www.gettoken.net" &&
+      modelKey.trim().toLowerCase() === "qwen-image-2.0";
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -79,6 +92,10 @@ function hasExecutableCustomCall(model: Model | undefined): boolean {
 }
 
 export const defaultCatalog: ProviderAdapterCatalogPort = {
+  resolveRegistrationVendorKey(input) {
+    return resolveCredentialScopedVendorKey(input, readCatalog());
+  },
+
   register(input) {
     const before = readCatalog();
     const existingVendor = before.vendors.find((vendor) => vendor.key === input.vendorKey);
@@ -104,6 +121,7 @@ export const defaultCatalog: ProviderAdapterCatalogPort = {
         providerKind: normalizeProviderKind(input.providerKind),
         meta: {
           ...asRecord(existingVendor?.meta),
+          ...(input.credentialScopedIdentity ? { credentialScopedConnection: true } : {}),
           ...(Object.keys(cleanHeaders).length ? { extraHeaders: cleanHeaders } : {}),
         },
       });
@@ -115,29 +133,50 @@ export const defaultCatalog: ProviderAdapterCatalogPort = {
         );
         const oldAdapter = asRecord(asRecord(existing?.meta).adapter);
         const hasActiveRevision = typeof oldAdapter.activeRevision === "string" && oldAdapter.activeRevision.trim();
+        const verifiedGetTokenImage = selected.kind === "image" &&
+          isVerifiedGetTokenImageModel(input.baseUrl, selected.modelKey);
         const hasPersistedContract = Boolean(
           hasActiveRevision ||
           hasExecutableCustomCall(existing) ||
-          hasExecutableMapping(before.mappings, input.vendorKey, selected.modelKey, selected.kind),
+          hasExecutableMapping(before.mappings, input.vendorKey, selected.modelKey, selected.kind) ||
+          verifiedGetTokenImage,
         );
         const canExecute = selected.kind === "text" || hasPersistedContract;
         const preserveAdapter = Boolean(existing && canExecute && Object.keys(oldAdapter).length > 0);
-        return tx.upsertModel({
+        const committed = tx.upsertModel({
           ...(existing || {}),
           vendorKey: input.vendorKey,
           modelKey: selected.modelKey,
           modelAlias: existing?.modelAlias || selected.modelKey,
           labelZh: selected.labelZh || existing?.labelZh || humanizeModelKey(selected.modelKey),
           kind: selected.kind,
-          enabled: existing ? existing.enabled && canExecute : selected.kind === "text",
+          enabled: verifiedGetTokenImage ? true : existing ? existing.enabled && canExecute : canExecute,
           onboarding: existing?.onboarding || { addedVia: "manual", addedAt: input.savedAt, fields: [] },
           meta: {
             ...asRecord(existing?.meta),
             adapter: preserveAdapter
               ? oldAdapter
-              : { state: "unverified", modes: [], updatedAt: input.savedAt },
+              : verifiedGetTokenImage
+                ? {
+                    state: "verified",
+                    activeRevision: "catalog:gettoken-images:v1",
+                    modes: [{ taskKind: "text_to_image", state: "verified", attempts: 1, verifiedAt: input.savedAt }],
+                    updatedAt: input.savedAt,
+                  }
+                : { state: "unverified", modes: [], updatedAt: input.savedAt },
           },
         });
+        if (verifiedGetTokenImage) {
+          tx.upsertMapping({
+            vendorKey: input.vendorKey,
+            modelKey: selected.modelKey,
+            taskKind: "text_to_image",
+            name: `${committed.labelZh} · 文生图`,
+            enabled: true,
+            create: NEWAPI_IMAGE_CREATE_OP,
+          });
+        }
+        return committed;
       });
       return { vendor, models };
     });

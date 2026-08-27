@@ -257,21 +257,29 @@ describe("manual model entry — user journey", () => {
     });
   });
 
-  it("re-adding under the same endpoint reuses the vendor and appends models (upsert)", () => {
-    commitManualOpenAiCompatibleModels({
-      vendorName: "same",
-      baseUrl: "https://api.same.test/v1",
-      apiKey: "k1",
-      models: [{ id: "first" }],
-    });
-    commitManualOpenAiCompatibleModels({
-      vendorName: "same",
-      baseUrl: "https://api.same.test/v1",
-      apiKey: "k2",
-      models: [{ id: "second" }],
-    });
+  it("re-adding the same credential under the same endpoint is idempotent and appends models", () => {
+    for (const id of ["first", "second"]) {
+      commitManualOpenAiCompatibleModels({
+        vendorName: "same", baseUrl: "https://api.same.test/v1", apiKey: "k1", models: [{ id }],
+      });
+    }
     expect(listModelCatalogVendors()).toHaveLength(1);
-    expect(listModelCatalogModels().map((m) => m.modelKey).sort()).toEqual(["first", "second"]);
+    expect(listModelCatalogModels().map((model) => model.modelKey).sort()).toEqual(["first", "second"]);
+  });
+
+  it("keeps distinct credentials on the same endpoint as independent connections", () => {
+    const first = commitManualOpenAiCompatibleModels({
+      vendorName: "group one", baseUrl: "https://api.same.test/v1", apiKey: "k1", models: [{ id: "first" }],
+    });
+    const second = commitManualOpenAiCompatibleModels({
+      vendorName: "group two", baseUrl: "https://api.same.test/v1", apiKey: "k2", models: [{ id: "second" }],
+    });
+    expect(first.vendorKey).toBe("api-same-test");
+    expect(second.vendorKey).toBe("api-same-test-2");
+    expect(listModelCatalogVendors()).toHaveLength(2);
+    expect(listModelCatalogModels().map((model) => `${model.vendorKey}/${model.modelKey}`).sort()).toEqual([
+      "api-same-test-2/second", "api-same-test/first",
+    ]);
   });
 });
 

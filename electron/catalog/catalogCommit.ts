@@ -5,6 +5,7 @@ import { consumedCanonicalKeys } from "./paramTranslate";
 import { nativeWireProfileById, nativeWireProfileId, type NativeWireProfile } from "./nativeWireProfiles";
 import { guessModelKind } from "./modelKindHeuristic";
 import { builtinVendorKeyForHostname } from "./builtinVendorSeeds";
+import { resolveCredentialScopedVendorKey } from "./credentialScopedVendor";
 import { hardenedFetchText } from "../hardenedFetch";
 import type { AiSdkProviderKind, BillingModelKind, HttpOperation, Model, ProfileKind, Vendor } from "./types";
 import type { TaskRequest } from "../runtime";
@@ -472,8 +473,14 @@ export function commitManualOpenAiCompatibleModels(payload: {
   if (!/^https?:\/\//i.test(baseUrl)) throw new Error("接入地址需以 http:// 或 https:// 开头");
   if (!apiKey) throw new Error("API Key 不能为空");
 
-  const vendorKey = deriveVendorKeyFromBaseUrl(baseUrl);
-  if (!vendorKey) throw new Error("无法从接入地址解析出供应商标识");
+  const derivedVendorKey = deriveVendorKeyFromBaseUrl(baseUrl);
+  if (!derivedVendorKey) throw new Error("无法从接入地址解析出供应商标识");
+  const vendorKey = resolveCredentialScopedVendorKey({
+    derivedVendorKey,
+    baseUrl,
+    apiKey,
+    authType: providerKind === "anthropic" ? "x-api-key" : "bearer",
+  }, readCatalog());
 
   const vendorName = String(payload?.vendorName || "").trim() || vendorKey;
 
@@ -484,8 +491,12 @@ export function commitManualOpenAiCompatibleModels(payload: {
     const value = String(v ?? "").trim();
     if (key && value) cleanHeaders[key] = value;
   }
-  const vendorMeta =
-    Object.keys(cleanHeaders).length > 0 ? { extraHeaders: cleanHeaders } : undefined;
+  const vendorMeta = vendorKey !== derivedVendorKey || Object.keys(cleanHeaders).length > 0
+    ? {
+        ...(vendorKey !== derivedVendorKey ? { credentialScopedConnection: true } : {}),
+        ...(Object.keys(cleanHeaders).length > 0 ? { extraHeaders: cleanHeaders } : {}),
+      }
+    : undefined;
 
   const rawModels = Array.isArray(payload?.models) ? payload.models : [];
   const seen = new Set<string>();

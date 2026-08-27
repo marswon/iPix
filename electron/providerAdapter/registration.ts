@@ -36,11 +36,20 @@ export function registerProviderConnection(input: {
   now: () => string;
 }): ProviderAdapterRegistration {
   const normalized = normalizeProviderAdapterInput(input.rawInput, "register");
-  const vendorKey = String(normalized.catalogVendorKey || "").trim() ||
-    deriveVendorKeyFromBaseUrl(normalized.baseUrl);
+  const explicitVendorKey = String(normalized.catalogVendorKey || "").trim();
+  const derivedVendorKey = deriveVendorKeyFromBaseUrl(normalized.baseUrl);
+  const vendorKey = explicitVendorKey || input.catalog.resolveRegistrationVendorKey?.({
+    ...normalized,
+    derivedVendorKey,
+  }) || derivedVendorKey;
   if (!vendorKey) throw new Error("Unable to derive a provider id from the API base URL");
   const savedAt = input.now();
-  const registered = input.catalog.register({ ...normalized, vendorKey, savedAt });
+  const registered = input.catalog.register({
+    ...normalized,
+    vendorKey,
+    savedAt,
+    credentialScopedIdentity: !explicitVendorKey && vendorKey !== derivedVendorKey,
+  });
   return {
     vendorKey: registered.vendor.key,
     vendorName: registered.vendor.name,

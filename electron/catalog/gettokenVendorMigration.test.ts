@@ -118,6 +118,19 @@ describe("GetToken vendor identity migration", () => {
     expect(state.vendors.map((vendor) => vendor.key)).toEqual(["gettoken", "www-gettoken-net"]);
   });
 
+  it("preserves a stable numeric sibling from before the credential marker existed", () => {
+    const sibling = legacyState();
+    sibling.vendors[0] = { ...sibling.vendors[0], key: "gettoken-2", name: "GetToken 通用", meta: undefined };
+    sibling.models = sibling.models.map((model) => ({ ...model, vendorKey: "gettoken-2" }));
+    sibling.mappings = sibling.mappings.map((mapping) => ({ ...mapping, vendorKey: "gettoken-2" }));
+    sibling.apiKeysByVendor = { "gettoken-2": key("gettoken-2", "general-key") };
+
+    const { state, changed } = migrateGetTokenVendorAliases(sibling);
+    expect(changed).toBe(false);
+    expect(state.vendors.map((vendor) => vendor.key)).toEqual(["gettoken-2"]);
+    expect(state.apiKeysByVendor["gettoken-2"]?.apiKey).toBe("general-key");
+  });
+
   it("does not overwrite or merge a legacy connection carrying a distinct credential", () => {
     const legacy = legacyState();
     legacy.vendors.unshift({

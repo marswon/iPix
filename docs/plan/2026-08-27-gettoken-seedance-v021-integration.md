@@ -60,10 +60,34 @@ The reference skill distinguishes a genuine GetToken provider handle (`task_...`
 
 Remove the GetToken profile and candidate registration. Existing catalog models can then fall back to generic New API transport after re-adding; no project document schema is changed.
 
+## Live Generation Evidence and Multi-group Correction
+
+The installed `v0.21.0-gettoken.3` successfully submitted a real 5-second, 720p, 16:9, no-audio text-to-video task. The first query returned `IN_PROGRESS`; the second query incorrectly used `/v1/video/generations/17` and failed with `task_not_exist`. Capturing the real responses established the exact ambiguity:
+
+- Create returns both `id: "task_..."` and `task_id: "task_..."`.
+- Query returns the immutable provider identity at `data.task_id`, while `data.id` is an unrelated numeric database row.
+- Nomi correctly queried the provider ID once, then merged query-derived metadata over cached create metadata and replaced `task_id` with the numeric row.
+- Resuming the original `task_...` directly completed successfully and produced a valid MP4.
+
+The next correction therefore applies these invariants:
+
+1. Provider task identity becomes immutable after create acceptance. Query responses may update status/output metadata, but cannot replace cached `task_id` or `query_id`.
+2. A newly created manual connection allocates a distinct vendor key when the derived Base URL identity is already occupied. Adding models from an existing connection page continues to reuse that explicit vendor key.
+3. This supports relay group credentials generically: the same host can have independently named credentials and model sets without overwriting each other.
+4. Existing strict canvas projection remains unchanged. Once the second connection has enabled text/image models and its own credential, those models appear in chat/image selectors beside other providers.
+5. GetToken alias migration continues to merge only historical host-derived aliases; explicit `gettoken-2`, `gettoken-3`, and marked credential-scoped connections remain separate.
+6. Only the exact official-host `qwen-image-2.0` contract proven by a real `/v1/images/generations` response is promoted to production. Discovered Pro/Max variants stay unverified until their wire contracts are tested.
+7. Equivalent endpoint spellings are URL-normalized before credential identity comparison, so default ports and trailing slashes remain idempotent.
+8. No new persistent control is added. Users create the second group through the existing add-connection flow and manage models through the existing connection detail flow.
+
 ## Verification
 
 - Contract tests for route, auth-safe request rendering, text, first-frame, and first/last bodies
 - Response normalization tests for documented task id, status, and result URL shapes
+- Query-cache regression proving numeric query envelope IDs cannot replace the accepted provider task ID
+- Same-host registration tests proving new connections receive distinct identities while explicit existing-connection additions reuse identity
+- Canvas option tests proving text and Qwen Image models from the second credential appear with strict readiness filters intact
 - Reachability test proving first/last modes remain usable and omni references remain blocked
 - Startup migration test proving native probe fallback selects GetToken and persists the distinct wire id
+- Real installed-app Seedance generation plus a real second-group text/image task
 - Related regression tests, typecheck, full Vitest, lint ratchet, structural gates, and production build

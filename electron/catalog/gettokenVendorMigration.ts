@@ -76,7 +76,11 @@ function mergeCredential(canonical: ApiKeyRecord | undefined, alias: ApiKeyRecor
 
 /** Consolidate legacy GetToken relay identities without overwriting a distinct saved credential. */
 export function migrateGetTokenVendorAliases(state: CatalogState): { state: CatalogState; changed: boolean } {
-  const aliases = state.vendors.filter((vendor) => vendor.key !== CANONICAL_KEY && isGetTokenBaseUrl(vendor.baseUrlHint || ""));
+  const aliases = state.vendors.filter((vendor) =>
+    vendor.key !== CANONICAL_KEY &&
+    !/^gettoken-\d+$/i.test(vendor.key) &&
+    isGetTokenBaseUrl(vendor.baseUrlHint || "") &&
+    (vendor.meta as Record<string, unknown> | undefined)?.credentialScopedConnection !== true);
   if (aliases.length === 0) return { state, changed: false };
 
   const vendors = [...state.vendors];

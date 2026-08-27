@@ -100,6 +100,22 @@ describe("未登记动词的端到端轮询行为", () => {
     expect(last.result.error).toBeUndefined();
   });
 
+  it("查询响应的数字行号不能覆盖 create 已接受的 provider task id", async () => {
+    const { fetchTaskResult } = await import("./taskResultQuery");
+    const taskId = "task-provider-immutable";
+    await seedPendingTask(taskId);
+    executeProfileOperation.mockResolvedValue({
+      response: { id: 17, status: "processing", data: { task_id: taskId } }, request: {},
+    });
+
+    expect((await fetchTaskResult({ taskId })).result.status).toBe("running");
+    expect((await fetchTaskResult({ taskId })).result.status).toBe("running");
+    expect(executeProfileOperation).toHaveBeenCalledTimes(2);
+    expect(executeProfileOperation.mock.calls.map(([input]) => input.providerMeta)).toEqual([
+      { task_id: taskId, query_id: taskId }, { task_id: taskId, query_id: taskId },
+    ]);
+  });
+
   it("未知动词中途变回认得的动词 → 连击清零，不再判死", async () => {
     const { fetchTaskResult } = await import("./taskResultQuery");
     const base = Date.parse("2026-08-11T02:00:00Z");
