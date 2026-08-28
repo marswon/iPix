@@ -74,6 +74,7 @@ import { VOLCENGINE_SEEDANCE_QUERY_OP, VOLCENGINE_SEEDANCE_STATUS_MAPPING, VOLCE
 import { GETTOKEN_PRESET_REVISION, GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
 import { catalogManagedWireHostMatches, catalogManagedWireIdentity, catalogManagedWireMappings } from "./catalogManagedWire";
 import { migrateGetTokenVendorAliases } from "./gettokenVendorMigration";
+import { repairGetTokenQwenImageContracts } from "./gettokenQwenImage";
 
 /** curated 模型/mapping 的内部类型（reconcile 两函数的输入）。 */
 type CuratedModel = {
@@ -635,7 +636,8 @@ export function applyBuiltinSeeds(state: CatalogState, now: string): { state: Ca
 
   const reconciled = { ...base, vendors, models, mappings };
   if (repairGetTokenPreset && repairGetTokenPresetAvailability(reconciled, now)) changed = true;
+  if (repairGetTokenQwenImageContracts(reconciled, now)) changed = true;
 
   if (!changed) return { state, changed: false };
-  return { state: { ...base, vendors, models, mappings }, changed: true };
+  return { state: reconciled, changed: true };
 }

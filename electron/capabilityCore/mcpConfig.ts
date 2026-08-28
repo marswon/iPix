@@ -72,8 +72,9 @@ type LauncherEntry = {
 function packagedNodeLauncherPaths(appCommand: string): Pick<LauncherEntry, 'command' | 'args'> {
   if (process.platform === 'darwin') {
     const contentsDir = path.resolve(path.dirname(appCommand), '..')
+    const helperName = `${path.basename(appCommand)} Helper`
     return {
-      command: path.join(contentsDir, 'Frameworks', 'Nomi Helper.app', 'Contents', 'MacOS', 'Nomi Helper'),
+      command: path.join(contentsDir, 'Frameworks', `${helperName}.app`, 'Contents', 'MacOS', helperName),
       args: [path.join(contentsDir, 'Resources', 'app.asar', 'dist-electron', 'capabilityCore', 'mcpNodeLauncher.js')],
     }
   }
@@ -83,7 +84,7 @@ function packagedNodeLauncherPaths(appCommand: string): Pick<LauncherEntry, 'com
   }
 }
 
-/** A previous installed Nomi is reusable only if it already contains the v3 Helper bridge. */
+/** A previous installed desktop build is reusable only if it already contains the v3 Helper bridge. */
 export function packagedMcpLauncherAvailable(appCommand: string): boolean {
   const launcher = packagedNodeLauncherPaths(appCommand)
   return fs.existsSync(appCommand) && fs.existsSync(launcher.command) && launcher.args.every((arg) => fs.existsSync(arg))
@@ -91,8 +92,13 @@ export function packagedMcpLauncherAvailable(appCommand: string): boolean {
 
 function installedMacLauncher(): string | null {
   if (process.platform !== 'darwin' || process.env.NODE_ENV === 'test' || process.env.NOMI_MCP_FORCE_DEV_LAUNCHER === '1') return null
-  const candidate = '/Applications/Nomi.app/Contents/MacOS/Nomi'
-  return packagedMcpLauncherAvailable(candidate) ? candidate : null
+  const candidates = [
+    '/Applications/iPix.app/Contents/MacOS/iPix',
+    '/Applications/iPix Preview.app/Contents/MacOS/iPix Preview',
+    '/Applications/Nomi.app/Contents/MacOS/Nomi',
+    '/Applications/Nomi Preview.app/Contents/MacOS/Nomi Preview',
+  ]
+  return candidates.find((candidate) => packagedMcpLauncherAvailable(candidate)) ?? null
 }
 
 function nodeLauncherEntry(appCommand: string, appArgs: string[], kind: McpLauncherKind): LauncherEntry {

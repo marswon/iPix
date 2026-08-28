@@ -32,6 +32,7 @@ import { listWorkspaceFiles, resolveWorkspaceFilePath } from "./workspace/worksp
 import { registerWorkspaceFileDeleteIpc } from "./workspace/workspaceFileDelete";
 import { logCrash } from "./crashLog";
 import { installMainProcessLifecycle } from "./mainProcessLifecycle";
+import { preserveLegacyUserData } from "./brandCompatibility";
 import { registerExportJobIpc } from "./export/exportJobIpc";
 import { registerAgentChatV2Ipc } from "./ai/agentChatV2Ipc";
 import { registerTextStreamIpc } from "./ai/textStreamIpc";
@@ -67,7 +68,7 @@ const configuredUserDataDir = String(process.env.NOMI_ELECTRON_USER_DATA_DIR || 
 if (configuredUserDataDir) {
   // dev-electron.mjs 按 renderer 端口隔离 profile，避免复用旧 Vite chunk/code cache。
   app.setPath("userData", configuredUserDataDir);
-}
+} else preserveLegacyUserData(app);
 // 单实例锁（能力核前提，docs/plan/2026-06-20）：保证同一 user-data 只有一个 app 实例 = 工程文件的
 // 唯一写者，外部 CLI/MCP 才能安全地「app 开着走 RPC、关着走 headless」。隔离实例（eval/promo 用独立
 // --user-data-dir）拿到的是各自的锁，不受影响。拿不到锁 = 已有实例在跑 → 让出（聚焦老窗后退出）。
@@ -290,7 +291,7 @@ async function createWindow(
     minWidth: 1100,
     minHeight: 720,
     backgroundColor: "#f6f3ee",
-    title: "Nomi",
+    title: "iPix",
     // Windows：去原生标题栏，改用渲染层自绘 windowbar（WindowControls）。
     // macOS/Linux：保留原生窗口 chrome（红绿灯/拖拽/缩放全交系统，零回归）。
     frame: process.platform !== "win32",

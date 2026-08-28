@@ -3,6 +3,7 @@ import {
   applyParamMap,
   bodyReferencedParamKeys,
   consumedCanonicalKeys,
+  ratioAliasResToOpenAiSize,
   ratioResToOpenAiSize,
   type ParamMap,
 } from "./paramTranslate";
@@ -29,6 +30,10 @@ describe("ratioResToOpenAiSize", () => {
   it("1K/2K 长边随档位缩放", () => {
     expect(ratioResToOpenAiSize(["16:9", "1K"])).toBe("1024x576");
     expect(ratioResToOpenAiSize(["16:9", "2K"])).toBe("2048x1152");
+  });
+  it("模型原生比例优先，缺失时兼容 aspect_ratio", () => {
+    expect(ratioAliasResToOpenAiSize(["1:1", "16:9", "1K"])).toBe("1024x1024");
+    expect(ratioAliasResToOpenAiSize([undefined, "16:9", "2K"])).toBe("2048x1152");
   });
 });
 

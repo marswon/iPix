@@ -97,7 +97,7 @@ for (const html of [zh, en]) {
     'dialog and no-JS fallback explain macOS first launch',
   )
   expect(
-    html.includes('xattr -dr com.apple.quarantine "/Applications/Nomi.app"'),
+    html.includes('xattr -dr com.apple.quarantine "/Applications/iPix.app"'),
     'macOS damaged-app recovery uses the scoped quarantine command',
   )
   expect(!html.includes('spctl --master-disable'), 'macOS guidance never disables Gatekeeper globally')
@@ -117,7 +117,7 @@ for (const html of [zh, en]) {
     !/<a[^>]+href="https:\/\/github\.com\/aqm857886159\/Nomi\/releases\/latest"/.test(html),
     'no download button links to the Releases listing',
   )
-  for (const installer of ['Nomi-windows-setup.exe', 'Nomi-mac-arm64.dmg', 'Nomi-mac-intel.dmg']) {
+  for (const installer of ['iPix-windows-setup.exe', 'iPix-mac-arm64.dmg', 'iPix-mac-intel.dmg']) {
     expect(html.includes(`/releases/latest/download/${installer}`), `${installer} direct link exists`)
   }
   expect(html.includes('business_inquiry.yml'), 'business CTA destination exists')
@@ -128,7 +128,7 @@ for (const html of [zh, en]) {
   )
   expect(!html.includes('data-open-dialog="group'), 'group QR does not require a dialog trigger')
   expect(html.includes('/assets/qingyang-wechat.jpg'), 'maintainer QR destination exists')
-  expect(html.includes('/assets/nomi-logo.svg'), 'official Nomi mark is used')
+  expect(html.includes('/assets/nomi-logo.svg'), 'official iPix mark is used')
   expect(html.includes('macOS 12+'), 'macOS minimum version is explicit')
   expect(html.includes(`"softwareVersion":"${releaseVersion}"`), 'structured data matches the release version')
   expect(
@@ -242,7 +242,7 @@ expect(readmeEn.includes('System Settings → Privacy & Security'), 'English REA
 expect(readmeZh.includes('“系统设置”→“隐私与安全”'), 'Chinese README prefers the supported macOS opening flow')
 for (const readme of [readmeEn, readmeZh]) {
   expect(
-    readme.includes('xattr -dr com.apple.quarantine "/Applications/Nomi.app"'),
+    readme.includes('xattr -dr com.apple.quarantine "/Applications/iPix.app"'),
     'README damaged-app recovery uses the scoped quarantine command',
   )
   expect(!readme.includes('spctl --master-disable'), 'README never disables Gatekeeper globally')
@@ -255,8 +255,8 @@ expect(quickstart.includes(`data-latest-version>v${releaseVersion}<`), 'quicksta
 expect(quickstart.includes(`"softwareVersion":"${releaseVersion}"`), 'quickstart structured data matches the release version')
 expect(quickstart.includes('macOS 12+'), 'quickstart states the macOS minimum version')
 
-const readmeHero = '[![Nomi director workflow]'
-const readmeZhHero = '[![Nomi 导演工作流]'
+const readmeHero = '[![iPix director workflow]'
+const readmeZhHero = '[![iPix 导演工作流]'
 for (const [token, label] of [
   ['<img src="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg"', 'group QR'],
   ['<img src="docs/media/qingyang-wechat.jpg"', 'maintainer QR'],

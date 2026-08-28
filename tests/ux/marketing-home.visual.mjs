@@ -404,7 +404,7 @@ async function auditDirectDownloads(browser) {
     Object.defineProperty(navigator, 'userAgentData', { configurable: true, get: () => undefined })
   })
   const windowsPage = await windowsContext.newPage()
-  const windowsUrl = 'https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-windows-setup.exe'
+  const windowsUrl = 'https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe'
   let requestedWindowsUrl = ''
   await windowsPage.route(windowsUrl, (route) => {
     requestedWindowsUrl = route.request().url()
@@ -431,7 +431,7 @@ async function auditDirectDownloads(browser) {
   })
   const armPage = await armContext.newPage()
   await armPage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' })
-  const armUrl = 'https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-arm64.dmg'
+  const armUrl = 'https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg'
   await armPage.waitForFunction((url) => document.querySelector('[data-download-nomi]')?.href === url, armUrl)
   assert(
     (await armPage.locator('[data-download-nomi]').first().getAttribute('href')) === armUrl,

@@ -124,6 +124,44 @@ describe("credential-scoped provider registration", () => {
     expect(registerSecondGroup("key-third").vendorKey).toBe("gettoken-3");
   });
 
+  it("installs the real-verified GetToken Qwen Pro edit contract", () => {
+    const registration = registerProviderConnection({
+      rawInput: {
+        vendorName: "GetToken Pro",
+        baseUrl: "https://www.gettoken.net",
+        apiKey: "variant-key",
+        authType: "bearer",
+        models: [{ modelKey: "qwen-image-2.0-pro", kind: "image" }],
+      },
+      catalog: defaultCatalog,
+      now: () => now,
+    });
+    const state = readCatalog();
+    expect(state.models.find((model) => model.vendorKey === registration.vendorKey)).toMatchObject({
+      enabled: true,
+      meta: {
+        imageOptions: { supportsReferenceImages: true },
+        adapter: {
+          state: "verified",
+          modes: [
+            { taskKind: "text_to_image", state: "verified" },
+            { taskKind: "image_edit", state: "verified" },
+          ],
+        },
+      },
+    });
+    expect(state.mappings.find((mapping) => mapping.vendorKey === registration.vendorKey &&
+      mapping.taskKind === "image_edit")).toMatchObject({
+      modelKey: "qwen-image-2.0-pro",
+      create: {
+        method: "POST",
+        path: "/v1/images/generations",
+        body: { image_urls: "{{request.params.image_urls}}" },
+        response_mapping: { image_url: "data[*].url" },
+      },
+    });
+  });
+
   it("does not promote unverified GetToken image variants or alternate hosts", () => {
     const unverifiedVariant = registerProviderConnection({
       rawInput: {
@@ -131,7 +169,7 @@ describe("credential-scoped provider registration", () => {
         baseUrl: "https://www.gettoken.net",
         apiKey: "variant-key",
         authType: "bearer",
-        models: [{ modelKey: "qwen-image-2.0-pro", kind: "image" }],
+        models: [{ modelKey: "qwen-image-max", kind: "image" }],
       },
       catalog: defaultCatalog,
       now: () => now,
@@ -142,7 +180,7 @@ describe("credential-scoped provider registration", () => {
         baseUrl: "https://api.gettoken.net",
         apiKey: "alternate-key",
         authType: "bearer",
-        models: [{ modelKey: "qwen-image-2.0", kind: "image" }],
+        models: [{ modelKey: "qwen-image-2.0-pro", kind: "image" }],
       },
       catalog: defaultCatalog,
       now: () => now,

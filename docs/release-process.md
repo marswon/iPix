@@ -101,9 +101,9 @@ RC 验收通过后：
 
 1. 确认 `https://github.com/aqm857886159/Nomi/releases/latest` 指向刚发布的 tag。
 2. 分别请求以下 GitHub 直链，跟随重定向后必须返回安装包内容，不能落到 `/releases/latest` 或 `/releases/tag/...` 页面：
-   - `https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-arm64.dmg`
-   - `https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-intel.dmg`
-   - `https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-windows-setup.exe`
+   - `https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg`
+   - `https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-intel.dmg`
+   - `https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe`
 3. 在 `https://nomiaqm.com/` 和 `https://nomiaqm.com/en/` 实测下载按钮：已知平台应直接请求对应的 `releases/latest/download/...` 安装包；无法判断 Mac 芯片时应在站内提供三个直链选项，不能把用户送到 Releases 列表。
 4. 实测应用更新入口 `https://nomiaqm.com/?download=1&source=app-update&platform=darwin&arch=arm64`，确认只触发一次对应 DMG 下载，并清除一次性查询参数。
 5. 检查 `latest-mac.yml`、`latest.yml` 和三个稳定安装包别名都属于本次版本，文件大小非零，下载响应不是 `text/html`。

@@ -8,7 +8,7 @@ const FORBIDDEN_OWNER_IMPORT = /(?:from|import\s*\()\s*["'](?:ai|@ai-sdk\/[^"']*
 
 vi.mock("../../skills/skillStore", () => ({ findSkillRecord: vi.fn() }));
 
-describe("Nomi agent context ownership", () => {
+describe("iPix agent context ownership", () => {
   beforeEach(() => {
     vi.mocked(findSkillRecord).mockReset();
     vi.mocked(findSkillRecord).mockReturnValue(null);
@@ -54,7 +54,7 @@ describe("Nomi agent context ownership", () => {
 
   it("preserves the honest missing-skill message", () => {
     expect(context.buildSkillSystemPrompt({ chatContext: { skill: { key: "missing-skill" } } })).toBe([
-      "Nomi 桌面 Agent skill 提示：",
+      "iPix 桌面 Agent skill 提示：",
       "请求的 skill 未在本地 skills 目录找到：missing-skill",
       "继续按用户请求和当前上下文完成任务；不要声称已经加载不存在的 skill。",
     ].join("\n"));
@@ -67,7 +67,7 @@ describe("Nomi agent context ownership", () => {
     };
     vi.mocked(findSkillRecord).mockReturnValue(skill);
     expect(context.buildSkillSystemPrompt({ chatContext: { skill: { key: "workbench.creation.story", name: "Story" } } })).toBe([
-      "Nomi 桌面 Agent 已加载本地 skill。以下内容是本次回复必须参考的领域方法论和输出约束。",
+      "iPix 桌面 Agent 已加载本地 skill。以下内容是本次回复必须参考的领域方法论和输出约束。",
       "注意：本桌面运行时只把 skill 作为本地知识注入；skill 中提到的外部 CLI、HTTP 或文件工具不会自动执行，除非当前对话/界面明确提供了对应能力。",
       "skillKey: workbench.creation.story", "skillName: Story", `skillFile: ${path.join("skills", "story", "SKILL.md")}`, "", skill.body,
     ].join("\n"));

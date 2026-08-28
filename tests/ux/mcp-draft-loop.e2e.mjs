@@ -50,11 +50,13 @@ if (!existsSync(realCatalog)) { console.log(`SKIP: 找不到真 model-catalog.js
 const appPathArg = process.argv.find((value) => value.startsWith("--app-path="));
 const appBundle = String(process.env.NOMI_APP_PATH || appPathArg?.slice("--app-path=".length) || "").trim();
 delete process.env.NOMI_APP_PATH;
+const packagedProductName = appBundle ? path.basename(appBundle, ".app") : "";
+const packagedHelperName = packagedProductName ? `${packagedProductName} Helper` : "";
 const packagedExecutable = appBundle
-  ? path.join(appBundle, "Contents", "MacOS", "Nomi")
+  ? path.join(appBundle, "Contents", "MacOS", packagedProductName)
   : "";
 const packagedLauncher = appBundle
-  ? path.join(appBundle, "Contents", "Frameworks", "Nomi Helper.app", "Contents", "MacOS", "Nomi Helper")
+  ? path.join(appBundle, "Contents", "Frameworks", `${packagedHelperName}.app`, "Contents", "MacOS", packagedHelperName)
   : "";
 const packagedLauncherScript = appBundle
   ? path.join(appBundle, "Contents", "Resources", "app.asar", "dist-electron", "capabilityCore", "mcpNodeLauncher.js")

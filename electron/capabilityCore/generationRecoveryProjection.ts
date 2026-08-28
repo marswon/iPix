@@ -38,8 +38,8 @@ export function projectGenerationRecovery(input: {
         profile: input.profile,
         title: isEnglish ? 'Checking submission' : '正在核对提交结果',
         message: isEnglish
-          ? providerReference ? `Nomi is checking provider task ${providerReference}; it will not submit again while checking.` : 'Nomi is checking whether the provider accepted the task; it will not submit again while checking.'
-          : providerReference ? `Nomi 正在核对供应商任务 ${providerReference}；确认前不会再次提交。` : 'Nomi 正在核对供应商是否已接受任务；确认前不会再次提交。',
+          ? providerReference ? `iPix is checking provider task ${providerReference}; it will not submit again while checking.` : 'iPix is checking whether the provider accepted the task; it will not submit again while checking.'
+          : providerReference ? `iPix 正在核对供应商任务 ${providerReference}；确认前不会再次提交。` : 'iPix 正在核对供应商是否已接受任务；确认前不会再次提交。',
         nextAction: 'reconcile',
         allowAutomaticRetry: false,
         allowNewAttempt: false,
@@ -52,8 +52,8 @@ export function projectGenerationRecovery(input: {
         profile: input.profile,
         title: isEnglish ? 'It may already be submitted' : '可能已经提交',
         message: isEnglish
-          ? providerReference ? `The provider may have accepted task ${providerReference}; Nomi can keep checking and will not resubmit automatically.` : 'The submission result is uncertain; check the provider before deciding. Nomi will not resubmit automatically.'
-          : providerReference ? `供应商任务 ${providerReference} 可能已经接受；Nomi 可以继续查询，不会自动重提。` : '提交结果暂时不确定；请到供应商核对，Nomi 不会自动重提。',
+          ? providerReference ? `The provider may have accepted task ${providerReference}; iPix can keep checking and will not resubmit automatically.` : 'The submission result is uncertain; check the provider before deciding. iPix will not resubmit automatically.'
+          : providerReference ? `供应商任务 ${providerReference} 可能已经接受；iPix 可以继续查询，不会自动重提。` : '提交结果暂时不确定；请到供应商核对，iPix 不会自动重提。',
         nextAction: providerReference ? 'reconcile' : 'manual_review',
         allowAutomaticRetry: false,
         allowNewAttempt: true,
@@ -64,7 +64,7 @@ export function projectGenerationRecovery(input: {
       state: input.state,
       profile: input.profile,
       title: isEnglish ? 'Submission needs checking' : '提交结果需要核对',
-      message: isEnglish ? 'The provider may have accepted the task; check with the provider before deciding whether to start a new attempt. Nomi will not resubmit automatically.' : '供应商可能已经接受任务；请先到供应商核对，再决定是否开启新的提交尝试；Nomi 不会自动重提。',
+      message: isEnglish ? 'The provider may have accepted the task; check with the provider before deciding whether to start a new attempt. iPix will not resubmit automatically.' : '供应商可能已经接受任务；请先到供应商核对，再决定是否开启新的提交尝试；iPix 不会自动重提。',
       nextAction: 'manual_review',
       allowAutomaticRetry: false,
       allowNewAttempt: true,
@@ -78,8 +78,8 @@ export function projectGenerationRecovery(input: {
       profile: input.profile,
       title: remoteMayContinue ? (isEnglish ? 'Waiting stopped' : '已停止等待') : (isEnglish ? 'Cancelling task' : '正在取消任务'),
       message: remoteMayContinue
-        ? (isEnglish ? 'Nomi stopped waiting; the provider task may still be running. Check its final status with the provider.' : 'Nomi 已停止等待；供应商任务可能仍在运行，请到供应商查看最终状态。')
-        : (isEnglish ? 'Nomi is checking cancellation with the provider; it will not submit again while checking.' : 'Nomi 正在向供应商确认取消结果；在确认前不会再次提交。'),
+        ? (isEnglish ? 'iPix stopped waiting; the provider task may still be running. Check its final status with the provider.' : 'iPix 已停止等待；供应商任务可能仍在运行，请到供应商查看最终状态。')
+        : (isEnglish ? 'iPix is checking cancellation with the provider; it will not submit again while checking.' : 'iPix 正在向供应商确认取消结果；在确认前不会再次提交。'),
       nextAction: 'observe',
       allowAutomaticRetry: false,
       allowNewAttempt: false,

@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="public/nomi-logo.svg" alt="Nomi" width="80" />
+  <img src="public/nomi-logo.svg" alt="iPix" width="80" />
 </p>
 
-# Nomi
+# iPix
 
 **模型你自己带，让你的 AI 助手替你导演。**
 
-Nomi 是一个开源的 AI 视频创作桌面工作台。接任何 OpenAI 兼容接口，或者你本机跑着的 ComfyUI；然后让 Claude Code / Codex / Cursor 经 MCP 直接开工——搭分镜、连参考、跑生成，在真实时间线上给你一版能改的初稿。
+iPix 是一个开源的 AI 视频创作桌面工作台。接任何 OpenAI 兼容接口，或者你本机跑着的 ComfyUI；然后让 Claude Code / Codex / Cursor 经 MCP 直接开工——搭分镜、连参考、跑生成，在真实时间线上给你一版能改的初稿。
 
 项目、提示词和密钥都在你自己电脑上。不用注册，没有埋点。
 
@@ -14,21 +14,21 @@ Nomi 是一个开源的 AI 视频创作桌面工作台。接任何 OpenAI 兼容
 
 ## 微信联系
 
-### 加入 Nomi 用户群
+### 加入 iPix 用户群
 
 <p align="center">
-  <a href="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg"><img src="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg" alt="Nomi 用户群微信二维码" width="220" /></a>
+  <a href="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg"><img src="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg" alt="iPix 用户群微信二维码" width="220" /></a>
 </p>
 
 <p align="center">
-  <strong>扫码加入 Nomi 用户群</strong><br />
+  <strong>扫码加入 iPix 用户群</strong><br />
   群内反馈会直接进入产品迭代。
 </p>
 
 ### 群码失效 / 项目合作
 
 <p align="center">
-  <a href="docs/media/qingyang-wechat.jpg"><img src="docs/media/qingyang-wechat.jpg" alt="Nomi 作者青阳的微信二维码" width="180" /></a>
+  <a href="docs/media/qingyang-wechat.jpg"><img src="docs/media/qingyang-wechat.jpg" alt="iPix 作者青阳的微信二维码" width="180" /></a>
 </p>
 
 <p align="center">
@@ -41,22 +41,22 @@ Nomi 是一个开源的 AI 视频创作桌面工作台。接任何 OpenAI 兼容
 ![平台](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-1a1816)
 [![许可证](https://img.shields.io/badge/license-AGPL--3.0--only-1a1816)](LICENSE)
 
-[![Nomi 导演工作流](marketing/assets/video/hero-poster.jpg)](https://nomiaqm.com/assets/demo.mp4)
+[![iPix 导演工作流](marketing/assets/video/hero-poster.jpg)](https://nomiaqm.com/assets/demo.mp4)
 
-## 为什么是 Nomi
+## 为什么是 iPix
 
 - **一个项目，不是十一个标签页**：故事、镜头、参考、生成结果和时间线在你自己盘上的同一个文件里，不用在多个工具之间反复搬运。
 - **第 4 个镜头和第 9 个镜头得是同一个人**：人物、场景、道具、机位和风格先锁一次，后面的镜头继承它，而不是重新赌一次提示词。
-- **自带全套**：内置约 10 家可直接用的供应商；任何 OpenAI 兼容 / Anthropic / Responses / 中转接口，粘贴地址和密钥就能加，不用重新编译。本机 ComfyUI 和云端模型一样是一个供应商：Nomi 会转换 ComfyUI 常规「保存」格式的工作流，你从网上下载的工作流能直接导入；并且会拿工作流和 `/object_info` 对账，在你按下运行之前就告诉你缺哪些自定义节点和模型文件。
-- **你的 AI 助手能真的操作它**：15 个 MCP 工具，让 Claude Code / Codex / Cursor 建项目、排镜头、连参考、跑生成并发起可恢复的完整制作。创作方向、付费生成、粗剪采用和导出都必须回到 Nomi 明确批准；审批由主进程强制执行，助手无法越权。
+- **自带全套**：内置约 10 家可直接用的供应商；任何 OpenAI 兼容 / Anthropic / Responses / 中转接口，粘贴地址和密钥就能加，不用重新编译。本机 ComfyUI 和云端模型一样是一个供应商：iPix 会转换 ComfyUI 常规「保存」格式的工作流，你从网上下载的工作流能直接导入；并且会拿工作流和 `/object_info` 对账，在你按下运行之前就告诉你缺哪些自定义节点和模型文件。
+- **你的 AI 助手能真的操作它**：15 个 MCP 工具，让 Claude Code / Codex / Cursor 建项目、排镜头、连参考、跑生成并发起可恢复的完整制作。创作方向、付费生成、粗剪采用和导出都必须回到 iPix 明确批准；审批由主进程强制执行，助手无法越权。
 
 ## 下载
 
 | 系统 | 适用机型 | 下载 |
 |---|---|---|
-| macOS | Apple Silicon（M 系列） | [Nomi-mac-arm64.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-arm64.dmg) |
-| macOS | Intel 芯片 | [Nomi-mac-intel.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-intel.dmg) |
-| Windows | Windows 10 / 11 x64 | [Nomi-windows-setup.exe](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-windows-setup.exe) |
+| macOS | Apple Silicon（M 系列） | [iPix-mac-arm64.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg) |
+| macOS | Intel 芯片 | [iPix-mac-intel.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-intel.dmg) |
+| Windows | Windows 10 / 11 x64 | [iPix-windows-setup.exe](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe) |
 
 🇨🇳 GitHub 打不开或下载慢：[夸克网盘镜像](https://pan.quark.cn/s/d3322c17e7b6)。最新版本以 [GitHub Releases](https://github.com/aqm857886159/Nomi/releases/latest) 和 [官网](https://nomiaqm.com/)为准。
 
@@ -64,19 +64,19 @@ Nomi 是一个开源的 AI 视频创作桌面工作台。接任何 OpenAI 兼容
 
 ### 在 macOS 上第一次打开
 
-当前 macOS 安装包**未使用 Apple Developer ID 签名，也未经过 Apple 公证**，所以第一次打开时可能被系统拦截。请只使用上表直链、Nomi 官网或 Nomi GitHub 官方仓库提供的下载链接。
+当前 macOS 安装包**未使用 Apple Developer ID 签名，也未经过 Apple 公证**，所以第一次打开时可能被系统拦截。请只使用上表直链、iPix 官网或 iPix GitHub 官方仓库提供的下载链接。
 
-1. 下载对应的 DMG，把 `Nomi.app` 拖进“应用程序”。
-2. 在 Finder 的“应用程序”中右键 `Nomi.app`，选择“打开”，再确认“打开”。
-3. 如果仍被拦截，打开“系统设置”→“隐私与安全”，找到 Nomi 的提示后点击“仍要打开”。
+1. 下载对应的 DMG，把 `iPix.app` 拖进“应用程序”。
+2. 在 Finder 的“应用程序”中右键 `iPix.app`，选择“打开”，再确认“打开”。
+3. 如果仍被拦截，打开“系统设置”→“隐私与安全”，找到 iPix 的提示后点击“仍要打开”。
 
-仅当 macOS 提示 Nomi“已损坏”时，先确认安装包来自 Nomi 官方链接，再打开“终端”运行：
+仅当 macOS 提示 iPix“已损坏”时，先确认安装包来自 iPix 官方链接，再打开“终端”运行：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Nomi.app"
+xattr -dr com.apple.quarantine "/Applications/iPix.app"
 ```
 
-不需要、也不要全局关闭 Gatekeeper。升级时需下载对应 DMG 后手动替换 `/Applications/Nomi.app`。
+不需要、也不要全局关闭 Gatekeeper。升级时需下载对应 DMG 后手动替换 `/Applications/iPix.app`。
 
 ### 在 Windows 上第一次打开
 
@@ -85,16 +85,16 @@ Windows 安装包未使用 Authenticode 签名。SmartScreen 弹窗选择“更�
 ## 三步开始
 
 1. **接入模型**：选择预置供应商并填写一个 Key，或添加自己的 OpenAI / Responses / Anthropic 兼容接口。
-2. **说出镜头意图**：写一个故事或一句镜头描述，让 Nomi 或已接入的 AI 助手生成可编辑的分镜与画布方案。
+2. **说出镜头意图**：写一个故事或一句镜头描述，让 iPix 或已接入的 AI 助手生成可编辑的分镜与画布方案。
 3. **导演并导出**：检查视觉锚点，用自己配置的模型生成图片或视频，选择结果、排上时间线并导出 MP4。
 
-> **利益披露**：预置供应商中有一家（APImart）的注册链接带推广码。你始终用自己的密钥、按供应商原价直接付给他们——Nomi 不代理、不转售任何推理服务，任何一家供应商都可以换成你自己的接口。
+> **利益披露**：预置供应商中有一家（APImart）的注册链接带推广码。你始终用自己的密钥、按供应商原价直接付给他们——iPix 不代理、不转售任何推理服务，任何一家供应商都可以换成你自己的接口。
 
 详细说明：[使用指南](docs/user-guide.md) · [模型接入](docs/provider-integration.md) · [CLI + MCP 指南](docs/guide/capability-core-cli-mcp.md)
 
 ## 团队服务
 
-如果你想把 Nomi 变成内部 AI 视频工作台、客户项目、垂直行业流程或贴牌产品，我们可以从首次验证一直做到上线后的持续迭代：
+如果你想把 iPix 变成内部 AI 视频工作台、客户项目、垂直行业流程或贴牌产品，我们可以从首次验证一直做到上线后的持续迭代：
 
 - 定制开发
 - 系统与模型集成
@@ -115,7 +115,7 @@ Windows 安装包未使用 Authenticode 签名。SmartScreen 弹窗选择“更�
 
 ```bash
 git clone https://github.com/aqm857886159/Nomi.git
-cd Nomi
+cd iPix
 corepack enable
 pnpm install
 pnpm dev

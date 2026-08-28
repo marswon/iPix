@@ -218,7 +218,7 @@ describe('MCP conversation journey (A7 · 真 service 全链路)', () => {
 
     // ── 事件流：durable cursor 把整段旅程逐行透出（含方向候选事件）────────────
     const events = await call(10, 'nomi_subscribe_run', { projectId: 'project-1', runId, afterCursor: 0 })
-    expect(text(events)).toContain('[Nomi] run.created')
+    expect(text(events)).toContain('[iPix] run.created')
     expect(text(events)).toContain('gate.candidates')
     expect(text(events)).toContain('gate.decided')
     expect(text(events)).toMatch(/next cursor \d+/)
@@ -229,7 +229,7 @@ describe('MCP conversation journey (A7 · 真 service 全链路)', () => {
     expect(text(missing)).toContain('✗')
   })
 
-  it('剧本和分镜都批准后，外部 Agent 可通过 MCP 把同一份分镜物化到 Nomi 项目', async () => {
+  it('剧本和分镜都批准后，外部 Agent 可通过 MCP 把同一份分镜物化到 iPix 项目', async () => {
     const { service, protocol, call } = makeJourney()
     protocol.handleIncoming({ jsonrpc: '2.0', id: 20, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: { elicitation: {} }, clientInfo: { name: 'codex' } } })
     const started = await call(21, 'nomi_start_playbook', { projectId: 'project-1', playbook: 'brand.promo', brief: { goal: '雨夜找猫', durationSeconds: 30 } })
@@ -247,7 +247,7 @@ describe('MCP conversation journey (A7 · 真 service 全链路)', () => {
     const storyboard = runWithStoryboard.artifacts.find((item) => item.kind === 'storyboard')!
     await call(24, 'nomi_review_artifact', { projectId: 'project-1', runId, artifactId: storyboard.artifactId, expectedVersion: storyboard.version || 1, decision: 'approved' })
     const materialized = await call(25, 'nomi_materialize_storyboard', { projectId: 'project-1', runId, artifactId: storyboard.artifactId, expectedVersion: storyboard.version || 1 })
-    expect(text(materialized)).toContain('分镜已落到 Nomi 画布')
+    expect(text(materialized)).toContain('分镜已落到 iPix 画布')
     expect(text(materialized)).toContain('canvas-shot-1')
     expect(outcome(materialized)).toMatchObject({ kind: 'storyboard_materialized', bindingCount: 1 })
     expect(service.readFull('project-1', runId)!.artifacts.some((item) => item.kind === 'storyboard' && item.status === 'adopted')).toBe(true)

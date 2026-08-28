@@ -19,7 +19,9 @@ export type ProjectLocationState = { path: string; source: ProjectLocationSource
 
 export function defaultProjectsFolderName(appName: string): string {
   const normalized = String(appName || "").trim();
-  if (!normalized || normalized.toLowerCase() === "nomi") return "Nomi Projects";
+  const identity = normalized.toLowerCase();
+  if (!identity || identity === "nomi" || identity === "ipix") return "Nomi Projects";
+  if (identity === "nomi preview" || identity === "ipix preview") return "Nomi Preview Projects";
   return `${normalized} Projects`;
 }
 

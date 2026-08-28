@@ -65,6 +65,11 @@ export function ratioResToOpenAiSize(values: Array<string | undefined>): string 
   return `${width}x${height}`;
 }
 
+/** Prefer a model-native ratio key while retaining a legacy canonical alias. */
+export function ratioAliasResToOpenAiSize(values: Array<string | undefined>): string | undefined {
+  return ratioResToOpenAiSize([values[0] || values[1], values[2]]);
+}
+
 /** 小写归一（某站字段值要小写，如 apimart 历史用 1k/2k/4k；中性 canonical 用 1K/2K/4K）。 */
 export function toLowerCase(values: Array<string | undefined>): string | undefined {
   const v = (values[0] || "").trim();
@@ -138,6 +143,7 @@ export function toUpperCase(values: Array<string | undefined>): string | undefin
  *  （number 用于严格类型的 wire 字段,如 AGNES Go 后端的 int width/height/num_frames）。 */
 export const PARAM_TRANSFORMS: Record<string, (values: Array<string | undefined>) => string | number | undefined> = {
   ratioResToOpenAiSize,
+  ratioAliasResToOpenAiSize,
   toLowerCase,
   toUpperCase,
   agnesVideoWidth,

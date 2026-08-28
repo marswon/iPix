@@ -9,11 +9,13 @@ import readline from 'node:readline'
 import { launchNomiApp } from './_launchApp.mjs'
 
 const bundlePath = path.resolve(process.argv[2] || '')
+const productName = process.platform === 'darwin' ? path.basename(bundlePath, '.app') : path.basename(bundlePath, path.extname(bundlePath))
 const executablePath = process.platform === 'darwin'
-  ? path.join(bundlePath, 'Contents', 'MacOS', 'Nomi')
+  ? path.join(bundlePath, 'Contents', 'MacOS', productName)
   : bundlePath
+const helperName = `${productName} Helper`
 const launcherPath = process.platform === 'darwin'
-  ? path.join(bundlePath, 'Contents', 'Frameworks', 'Nomi Helper.app', 'Contents', 'MacOS', 'Nomi Helper')
+  ? path.join(bundlePath, 'Contents', 'Frameworks', `${helperName}.app`, 'Contents', 'MacOS', helperName)
   : executablePath
 const launcherScript = process.platform === 'darwin'
   ? path.join(bundlePath, 'Contents', 'Resources', 'app.asar', 'dist-electron', 'capabilityCore', 'mcpNodeLauncher.js')
@@ -26,7 +28,7 @@ fs.writeFileSync(path.join(capabilityDir, 'token'), token, { mode: 0o600 })
 const clients = ['claude', 'codex', 'cursor']
 
 if (!fs.existsSync(executablePath) || !fs.existsSync(launcherPath)) {
-  throw new Error(`Packaged Nomi executable/helper not found: ${executablePath} / ${launcherPath}`)
+  throw new Error(`Packaged ${productName} executable/helper not found: ${executablePath} / ${launcherPath}`)
 }
 
 function assert(condition, message) {

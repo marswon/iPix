@@ -50,7 +50,7 @@ describe('external storyboard materialization MCP seam', () => {
       projectId: 'project-1', runId: 'run-1', artifactId: 'artifact-storyboard-v1', expectedVersion: 1,
     })
     const result = response(frames, 2).result as { content: Array<{ type: string; text: string }>; structuredContent?: { nomiOutcome?: Record<string, unknown> } }
-    expect(result.content[0].text).toContain('分镜已落到 Nomi 画布')
+    expect(result.content[0].text).toContain('分镜已落到 iPix 画布')
     expect(result.content[0].text).toContain('node-shot-1')
     expect(result.content[0].text).toContain('nomi://project/project-1/run/run-1?artifact=artifact-storyboard-v1')
     expect(result.structuredContent?.nomiOutcome).toMatchObject({ kind: 'storyboard_materialized', bindingCount: 2 })

@@ -105,7 +105,7 @@ describe('confirm_all per-shot provider boundary', () => {
     expect(narration.text).toContain('第 1 镜')
     expect(narration.text).toContain('shot-1')
     expect(narration.text).toContain('local · demo-video')
-    expect(narration.text).toContain('请回 Nomi 决定')
+    expect(narration.text).toContain('请回 iPix 决定')
     expect(narration.outcome).toMatchObject({ shotGateId: shotGate.gateId, shotJobId: current.jobs[0].jobId, nextActions: ['review_shot_in_nomi'] })
 
     await service.command('project-1', runId, {

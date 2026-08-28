@@ -24,7 +24,7 @@ export const FORMATS = {
 
 const escape = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-// 「怎么搜到 Nomi」是每张海报的硬性收口，两种版式共用同一块，不各写一份
+// 「怎么搜到 iPix」是每张海报的硬性收口，两种版式共用同一块，不各写一份
 const searchBlock = (spec) => `<div class="search">
         <div class="box">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4.2-4.2" /></svg>
@@ -87,7 +87,7 @@ body{background:${INK};color:${PAPER};font-family:"PingFang SC","Hiragino Sans G
   ${board ? `<img class="board" src="${board}" alt="" /><div class="veil"></div>` : ''}
   <div class="layer">
     <section class="copy">
-      <header class="brand"><img src="${logo}" alt="" /><span>Nomi</span><span class="eyebrow">${escape(spec.eyebrow)}</span></header>
+      <header class="brand"><img src="${logo}" alt="" /><span>iPix</span><span class="eyebrow">${escape(spec.eyebrow)}</span></header>
       <h1 class="claim">${headline}</h1>
       <p class="sub">${escape(spec.sub)}</p>
       ${isWide ? searchBlock(spec, format) : ''}

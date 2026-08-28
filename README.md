@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="public/nomi-logo.svg" alt="Nomi" width="80" />
+  <img src="public/nomi-logo.svg" alt="iPix" width="80" />
 </p>
 
-# Nomi
+# iPix
 
 **Bring your own models. Let your AI assistant direct them.**
 
-Nomi is an open-source desktop workbench for AI video. Connect any OpenAI-compatible endpoint or your local ComfyUI, then let Claude Code, Codex, or Cursor drive it over MCP — storyboard, references, generation, and an editable first cut on a real timeline.
+iPix is an open-source desktop workbench for AI video. Connect any OpenAI-compatible endpoint or your local ComfyUI, then let Claude Code, Codex, or Cursor drive it over MCP — storyboard, references, generation, and an editable first cut on a real timeline.
 
 Your projects, prompts, and API keys stay on your machine. No account. No telemetry.
 
@@ -14,21 +14,21 @@ Your projects, prompts, and API keys stay on your machine. No account. No teleme
 
 ## WeChat / 微信联系
 
-### Join the Nomi user group / 加入 Nomi 用户群
+### Join the iPix user group / 加入 iPix 用户群
 
 <p align="center">
-  <a href="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg"><img src="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg" alt="Nomi 用户群微信二维码" width="220" /></a>
+  <a href="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg"><img src="docs/media/nomi-canvas-group-wechat-2026-08-25.jpg" alt="iPix 用户群微信二维码" width="220" /></a>
 </p>
 
 <p align="center">
-  <strong>Scan to join the user group. / 扫码加入 Nomi 用户群</strong><br />
+  <strong>Scan to join the user group. / 扫码加入 iPix 用户群</strong><br />
   Product feedback from the group goes directly into ongoing iteration. / 群内反馈会直接进入产品迭代。
 </p>
 
 ### Maintainer & project collaboration / 添加作者与项目合作
 
 <p align="center">
-  <a href="docs/media/qingyang-wechat.jpg"><img src="docs/media/qingyang-wechat.jpg" alt="Nomi 作者青阳的微信二维码" width="180" /></a>
+  <a href="docs/media/qingyang-wechat.jpg"><img src="docs/media/qingyang-wechat.jpg" alt="iPix 作者青阳的微信二维码" width="180" /></a>
 </p>
 
 <p align="center">
@@ -42,37 +42,37 @@ International community: [GitHub Issues](https://github.com/aqm857886159/Nomi/is
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-1a1816)
 [![License](https://img.shields.io/badge/license-AGPL--3.0--only-1a1816)](LICENSE)
 
-[![Nomi director workflow](marketing/assets/video/hero-poster.jpg)](https://nomiaqm.com/assets/video/launch-film-en.mp4)
+[![iPix director workflow](marketing/assets/video/hero-poster.jpg)](https://nomiaqm.com/assets/video/launch-film-en.mp4)
 
-## Why Nomi
+## Why iPix
 
 - **One project, not eleven tabs.** Story, shots, references, generated takes, and the timeline live in the same file on your disk instead of being copied between disconnected tools.
 - **Shot 4 and shot 9 should be the same person.** Lock characters, locations, props, camera, and style once; later shots inherit them instead of restarting from a new prompt.
-- **Bring your own stack.** Around ten curated providers are pre-wired, and any OpenAI-compatible, Anthropic, Responses, or relay endpoint can be added by pasting a URL and a key — no rebuild. A local ComfyUI is a provider like any other: Nomi converts the normal "Save" workflow format, so the workflows you download actually import, and it diffs the graph against `/object_info` to tell you which custom nodes and model files you are missing before you run it.
-- **Your agent can operate it.** Thirty-three MCP tools let Claude Code, Codex, or Cursor converge on a direction in one pass, create projects, import local assets, lay out shots, materialize an approved storyboard into the Nomi canvas, wire references, run generation, and control a durable production run. The staged semantic generation tools make model, provider, mode, parameters, and references editable before sealing; they remain zero-credit and feature-gated until the Run/recovery checks pass. Reversible direction and sample choices receive a server-issued human confirmation in the originating client; budgets, per-shot paid submissions, rough-cut acceptance, and export stay in Nomi, enforced in the main process.
+- **Bring your own stack.** Around ten curated providers are pre-wired, and any OpenAI-compatible, Anthropic, Responses, or relay endpoint can be added by pasting a URL and a key — no rebuild. A local ComfyUI is a provider like any other: iPix converts the normal "Save" workflow format, so the workflows you download actually import, and it diffs the graph against `/object_info` to tell you which custom nodes and model files you are missing before you run it.
+- **Your agent can operate it.** Thirty-three MCP tools let Claude Code, Codex, or Cursor converge on a direction in one pass, create projects, import local assets, lay out shots, materialize an approved storyboard into the iPix canvas, wire references, run generation, and control a durable production run. The staged semantic generation tools make model, provider, mode, parameters, and references editable before sealing; they remain zero-credit and feature-gated until the Run/recovery checks pass. Reversible direction and sample choices receive a server-issued human confirmation in the originating client; budgets, per-shot paid submissions, rough-cut acceptance, and export stay in iPix, enforced in the main process.
 
 ## Download
 
 | System | Build | Download |
 |---|---|---|
-| macOS | Apple Silicon | [Nomi-mac-arm64.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-arm64.dmg) |
-| macOS | Intel | [Nomi-mac-intel.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-intel.dmg) |
-| Windows | Windows 10 / 11 x64 | [Nomi-windows-setup.exe](https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-windows-setup.exe) |
+| macOS | Apple Silicon | [iPix-mac-arm64.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg) |
+| macOS | Intel | [iPix-mac-intel.dmg](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-intel.dmg) |
+| Windows | Windows 10 / 11 x64 | [iPix-windows-setup.exe](https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe) |
 
 Supported release targets are macOS arm64/x64 and Windows x64. Linux, Windows arm64, and macOS universal installers are not currently published.
 
 ### First launch on macOS
 
-The current macOS build is **not Apple Developer ID signed or notarized**, so macOS may block it on first launch. Only use the direct downloads in the table above or links from the official Nomi website and GitHub repository.
+The current macOS build is **not Apple Developer ID signed or notarized**, so macOS may block it on first launch. Only use the direct downloads in the table above or links from the official iPix website and GitHub repository.
 
-1. Download the matching DMG and drag `Nomi.app` to Applications.
-2. In Finder, right-click `Nomi.app` in Applications, choose **Open**, then confirm **Open**.
-3. If it is still blocked, open **System Settings → Privacy & Security**, find the Nomi message, and click **Open Anyway**.
+1. Download the matching DMG and drag `iPix.app` to Applications.
+2. In Finder, right-click `iPix.app` in Applications, choose **Open**, then confirm **Open**.
+3. If it is still blocked, open **System Settings → Privacy & Security**, find the iPix message, and click **Open Anyway**.
 
-Only if macOS says Nomi is “damaged”, first confirm the installer came from an official Nomi link, then run:
+Only if macOS says iPix is “damaged”, first confirm the installer came from an official iPix link, then run:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Nomi.app"
+xattr -dr com.apple.quarantine "/Applications/iPix.app"
 ```
 
 Do not disable Gatekeeper globally. Updates require downloading the matching DMG and replacing the app manually.
@@ -84,10 +84,10 @@ The installer has no Authenticode signature. In the SmartScreen prompt, choose *
 ## Quick start
 
 1. **Connect a model.** Choose a curated provider and enter one API key, or add your own OpenAI-, Responses-, or Anthropic-compatible endpoint.
-2. **Write the intent.** Start with a story or one shot. Ask Nomi—or a connected AI assistant over MCP—to build an editable storyboard and canvas plan.
+2. **Write the intent.** Start with a story or one shot. Ask iPix—or a connected AI assistant over MCP—to build an editable storyboard and canvas plan.
 3. **Direct and export.** Review visual anchors, generate images or video with your configured models, choose the results, arrange the timeline, and export MP4.
 
-> **Disclosure:** one curated provider (APImart) is linked with a referral code. You always pay providers directly with your own key at their price — Nomi never proxies or resells inference, and every provider can be replaced by your own endpoint.
+> **Disclosure:** one curated provider (APImart) is linked with a referral code. You always pay providers directly with your own key at their price — iPix never proxies or resells inference, and every provider can be replaced by your own endpoint.
 
 Read the [user guide](docs/user-guide.md), [provider guide](docs/provider-integration.md), or [CLI + MCP guide](docs/guide/capability-core-cli-mcp.md).
 
@@ -97,7 +97,7 @@ Use [GitHub Issues](https://github.com/aqm857886159/Nomi/issues) to share workfl
 
 ## For Teams
 
-Nomi is open source for creators. We also provide **Custom builds**, **Integrations**, **White-label / commercial licenses**, and **Ongoing iteration** for teams that need Nomi adapted to a real delivery workflow.
+iPix is open source for creators. We also provide **Custom builds**, **Integrations**, **White-label / commercial licenses**, and **Ongoing iteration** for teams that need iPix adapted to a real delivery workflow.
 
 [Discuss a project](https://github.com/aqm857886159/Nomi/issues/new?template=business_inquiry.yml). The form is public: share only a non-confidential summary and never post credentials, private contact details, budget details, or NDA-protected information.
 
@@ -107,7 +107,7 @@ Requires Node.js 20+ and pnpm.
 
 ```bash
 git clone https://github.com/aqm857886159/Nomi.git
-cd Nomi
+cd iPix
 corepack enable
 pnpm install
 pnpm dev

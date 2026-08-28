@@ -26,7 +26,7 @@ function cleanUrls(values: readonly string[] | undefined, max?: number): string[
 
 function defaultPrompt(kind: BillingModelKind): string {
   if (kind === 'text') return '把这段内容整理成三个清晰要点。'
-  if (kind === 'audio') return '欢迎使用 Nomi。'
+  if (kind === 'audio') return '欢迎使用 iPix。'
   if (kind === 'video') return '雨夜街头，镜头缓慢向前推进，光线自然。'
   if (kind === 'model3d') return '一个边缘圆润的红色旅行杯，白色背景。'
   return '一个放在木桌上的红苹果，自然柔光，细节清晰。'

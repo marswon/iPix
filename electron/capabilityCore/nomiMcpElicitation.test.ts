@@ -5,8 +5,8 @@ import { createMcpProtocol, type McpTransport } from './mcpProtocol'
 // 验证手搓双向 JSON-RPC：服务端能发 elicitation/create 给客户端、按 id 路由响应、按确认结果放行/拦截。
 // 直接驱动纯协议层 mcpProtocol.ts（注入假 transport）——不 spawn 任何进程、不触发真实生成。
 //
-// 路由判据 = 「谁能替我们问到真人」，**不是「Nomi 窗口开着没」**（2026-08-18 修：窗口开着 ≠ 用户注意力
-// 在 Nomi，旧判据害得人从 Claude 跑回 App 点一下）。下面 4 条锁死 {支持 elicitation × App 开/关} 全矩阵。
+// 路由判据 = 「谁能替我们问到真人」，**不是「iPix 窗口开着没」**（2026-08-18 修：窗口开着 ≠ 用户注意力
+// 在 iPix，旧判据害得人从 Claude 跑回 App 点一下）。下面 4 条锁死 {支持 elicitation × App 开/关} 全矩阵。
 
 type RpcMessage = { jsonrpc?: string; id?: unknown; method?: string; params?: Record<string, unknown>; result?: unknown; error?: { code?: number; message?: string } }
 
@@ -92,8 +92,8 @@ describe('nomi-mcp · 付费确认按「谁能问到真人」路由', () => {
     expect(typeof elicit.id).toBe('string')
     const params = elicit.params as { message?: string }
     expect(params.message).toContain('doubao-seedance-2.0')
-    // 旧文案硬编码了「Nomi 未打开。」开头；改判据后 App 开着也走这条，那句话不再成立 → 必须已删。
-    expect(params.message).not.toContain('Nomi 未打开')
+    // 旧文案硬编码了「iPix 未打开。」开头；改判据后 App 开着也走这条，那句话不再成立 → 必须已删。
+    expect(params.message).not.toContain('iPix 未打开')
     // 真人点了取消 → decline。
     harness.send({ jsonrpc: '2.0', id: elicit.id, result: { action: 'decline' } })
     const toolRes = await harness.next()
@@ -104,14 +104,14 @@ describe('nomi-mcp · 付费确认按「谁能问到真人」路由', () => {
     expect(harness.invoke).not.toHaveBeenCalled()
   })
 
-  it('② 支持 elicitation + App 开：仍弹在调用方（不赶人回 Nomi），accept 才带 spendConfirmed 放行', async () => {
+  it('② 支持 elicitation + App 开：仍弹在调用方（不赶人回 iPix），accept 才带 spendConfirmed 放行', async () => {
     // 这条就是本次修复的核心：旧判据下 App 一开就跳过 elicitation、把人赶去点应用内卡片。
     harness = new ProtocolHarness(true, generateOk)
     await harness.initialize(true)
     callGenerate(harness)
     const elicit = await harness.next()
     expect(elicit.method).toBe('elicitation/create')
-    expect((elicit.params as { message?: string }).message).not.toContain('Nomi 未打开')
+    expect((elicit.params as { message?: string }).message).not.toContain('iPix 未打开')
     harness.send({ jsonrpc: '2.0', id: elicit.id, result: { action: 'accept', content: { confirm: true } } })
     const toolRes = await harness.next()
     expect(toolRes.id).toBe(2)
@@ -273,7 +273,7 @@ describe('nomi-mcp · 创意门由服务端强制 elicitation', () => {
     const response = await harness.next()
     expect(response.id).toBe(2)
     expect(response.result).toMatchObject({ isError: true })
-    expect(JSON.stringify(response.result)).toContain('Nomi')
+    expect(JSON.stringify(response.result)).toContain('iPix')
     expect(harness.invoke).toHaveBeenCalledTimes(1)
   })
 })

@@ -38,15 +38,14 @@ type NomiWordmarkProps = {
 } & HTMLAttributes<HTMLSpanElement>
 
 /**
- * Nomi 文字标志「No·m·i」的**唯一真相源**（P1）：中间的 m 永远 accent 色、Fraunces 字体。
- * No/i 颜色由 className/父级控制（品牌处 text-nomi-ink、消息标签处可灰）；m 的 accent 是品牌不变量。
- * 任何要显示「Nomi」字标的地方都用它，别再手写 `No<span>m</span>i`。
+ * iPix 文字标志的唯一真相源：小写 i 保持正文色，Pix 使用品牌强调色。
+ * 内部组件名保留 Nomi 前缀以兼容现有调用方；用户可见品牌统一由 i18n 提供。
  */
 export function NomiWordmark({ fontSize, className, ...rest }: NomiWordmarkProps): JSX.Element {
   const { t } = useTranslation()
   return (
     <span
-      className={cn('nomi-wordmark', 'font-nomi-display font-normal tracking-[-0.02em] leading-none', className)}
+      className={cn('nomi-wordmark', 'font-sans font-semibold tracking-normal leading-none', className)}
       style={fontSize ? { fontSize } : undefined}
       {...rest}
     >
@@ -68,9 +67,9 @@ export function NomiBrand({ markSize = 26, wordSize = 17, className }: NomiBrand
     >
       <svg width={markSize} height={markSize} viewBox="0 0 28 28" fill="none" aria-hidden="true" className="shrink-0">
         <rect width="28" height="28" rx={rx} fill="var(--nomi-logo-ground)" />
-        <rect x="5.5" y="5.5" width="4" height="17" rx="1.2" fill="white" />
-        <rect x="18.5" y="5.5" width="4" height="17" rx="1.2" fill="white" />
-        <polygon points="9.5,5.5 13.5,5.5 18.5,22.5 14.5,22.5" fill="white" />
+        <path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="square" />
+        <circle cx="14" cy="9" r="1.75" fill="var(--nomi-accent)" />
+        <rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="var(--nomi-accent)" />
       </svg>
       <NomiWordmark fontSize={wordSize} className="nomi-brand__word text-nomi-ink" aria-hidden="true" />
     </div>
@@ -88,9 +87,9 @@ export function NomiLogoMark({ size = 24, className }: NomiLogoMarkProps): JSX.E
       className={cn('nomi-logo-mark', 'block shrink-0', className)}
     >
       <rect width="28" height="28" rx="7" fill="var(--nomi-logo-ground)" />
-      <rect x="5.5" y="5.5" width="4" height="17" rx="1.2" fill="white" />
-      <rect x="18.5" y="5.5" width="4" height="17" rx="1.2" fill="white" />
-      <polygon points="9.5,5.5 13.5,5.5 18.5,22.5 14.5,22.5" fill="white" />
+      <path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="square" />
+      <circle cx="14" cy="9" r="1.75" fill="var(--nomi-accent)" />
+      <rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="var(--nomi-accent)" />
     </svg>
   )
 }

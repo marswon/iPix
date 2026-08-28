@@ -2,10 +2,10 @@
 //
 // 手搓 stdio JSON-RPC 2.0（newline-delimited，MCP stdio transport 规范；协议形状经 Context7 核对 R5），
 // 不引 @modelcontextprotocol/sdk 依赖（P1 极简）。把能力核暴露成 MCP 工具，供 Claude Code / Codex / Cursor
-// 配置后实时驱动 Nomi。**这是唯一的 MCP server 实现**——打包/dev 都由 app 自身二进制以 NOMI_MCP_STDIO
+// 配置后实时驱动 iPix。**这是唯一的 MCP server 实现**——打包/dev 都由 app 自身二进制以 NOMI_MCP_STDIO
 // 模式拉起 mcpStdioServer.ts，后者把本模块接到 stdin/stdout + 进程内 invoke（取代旧 scripts/nomi-mcp.mjs，P1）。
 //
-// 传输经 McpTransport 注入：send（服务端→客户端帧）/ invoke（调能力核）/ isAppOpen（Nomi 开着没 = 还有没有
+// 传输经 McpTransport 注入：send（服务端→客户端帧）/ invoke（调能力核）/ isAppOpen（iPix 开着没 = 还有没有
 // 应用内确认卡这条兜底问法；**不用来猜用户注意力在哪**）。本模块不 import electron → 协议握手可纯逻辑单测。
 //
 // MCP Apps（GUI 宿主内嵌活 widget，扩展 id io.modelcontextprotocol/ui，Stable 2026-01-26）：
@@ -64,7 +64,7 @@ export interface McpTransport {
   send(message: unknown): void
   invoke(method: string, params: Record<string, unknown>, options?: McpInvokeOptions): Promise<unknown>
   /**
-   * Nomi 是否开着（有活实例）= **「应用内确认卡这条问法还在不在」**，不是「用户注意力在不在 Nomi」。
+   * iPix 是否开着（有活实例）= **「应用内确认卡这条问法还在不在」**，不是「用户注意力在不在 iPix」。
    * 确认优先弹在调用方（客户端声明 elicitation 即可）；本标志只用于回答「客户端问不了时，还有谁能问」。
    */
   isAppOpen(): boolean
@@ -309,7 +309,7 @@ export function createMcpProtocol(transport: McpTransport) {
       && (gateId.startsWith('gate-direction-') || gateId.startsWith('gate-sample-') || gateId.startsWith('gate-freeze-'))
     // P4 §3.2：锚定妆照检查点与创意门同权（免费质量门，不授权预算）——判定用共享谓词，不再手抄前缀。
     const isCheckpoint = typeof gate.scope === 'string' && isAnchorCheckpointGate({ gateId, scope: gate.scope })
-    if (!creative && !isCheckpoint) throw new Error('This decision must be completed in Nomi')
+    if (!creative && !isCheckpoint) throw new Error('This decision must be completed in iPix')
     // W2 冻结门是「视觉确认」语义（确认这批角色/场景卡定妆了、可锁死当身份基准），走同一条创意门 seam。
     const isFreeze = gateId.startsWith('gate-freeze-')
 
@@ -341,15 +341,15 @@ export function createMcpProtocol(transport: McpTransport) {
           : (isEnglish ? 'Confirm this creative decision' : '确认这次创意决定'),
       description: isCheckpoint
         ? (isEnglish
-            ? 'Approve = the look is right; the remaining shots generate within the budget you already confirmed (no new authorization). Reject = stay at the checkpoint; the stills are kept and can be regenerated. Review the stills in Nomi (or have the assistant show them) first.'
-            : '批准 = 认可这批定妆照，剩余镜头在你确认卡上已批的预算内继续生成（不新增授权）；否决 = 停在检查点，定妆照保留、可重出形象后再来。请先在 Nomi 画布过目定妆照，或让助手展示给你看。')
+            ? 'Approve = the look is right; the remaining shots generate within the budget you already confirmed (no new authorization). Reject = stay at the checkpoint; the stills are kept and can be regenerated. Review the stills in iPix (or have the assistant show them) first.'
+            : '批准 = 认可这批定妆照，剩余镜头在你确认卡上已批的预算内继续生成（不新增授权）；否决 = 停在检查点，定妆照保留、可重出形象后再来。请先在 iPix 画布过目定妆照，或让助手展示给你看。')
         : isFreeze
           ? (isEnglish
-              ? 'Freezing locks these character/scene cards as the identity baseline for every shot. Review them in Nomi first. Spending and export approvals still happen in Nomi.'
-              : '冻结会把这些角色/场景卡锁成每个镜头的身份基准，请先在 Nomi 里过目。支出与导出仍必须在 Nomi 中确认。')
+              ? 'Freezing locks these character/scene cards as the identity baseline for every shot. Review them in iPix first. Spending and export approvals still happen in iPix.'
+              : '冻结会把这些角色/场景卡锁成每个镜头的身份基准，请先在 iPix 里过目。支出与导出仍必须在 iPix 中确认。')
           : (isEnglish
-              ? 'Only this reversible creative gate will be decided. Spending and export approvals remain in Nomi.'
-              : '只会决定这道可逆创意门；支出与导出仍必须在 Nomi 中确认。'),
+              ? 'Only this reversible creative gate will be decided. Spending and export approvals remain in iPix.'
+              : '只会决定这道可逆创意门；支出与导出仍必须在 iPix 中确认。'),
     }, signal)
   }
 
@@ -406,8 +406,8 @@ export function createMcpProtocol(transport: McpTransport) {
         capabilities: { tools: {}, resources: {}, prompts: {} },
         serverInfo: { name: 'nomi-capability-core', version: '0.1.0' },
         instructions:
-          '用 nomi_* 工具在本机驱动 Nomi：可安全发起制作草稿、读取 Run/事件/产物并深链回 Nomi；低层画布与单次生成工具继续兼容。' +
-          '另经 resources/prompts 暴露 Nomi 的「导演/编剧技能库」（从阿泽导演台整过来的电影方法论：拆镜头/运镜/一致性/摄影/对白/结构等）——' +
+          '用 nomi_* 工具在本机驱动 iPix：可安全发起制作草稿、读取 Run/事件/产物并深链回 iPix；低层画布与单次生成工具继续兼容。' +
+          '另经 resources/prompts 暴露 iPix 的「导演/编剧技能库」（从阿泽导演台整过来的电影方法论：拆镜头/运镜/一致性/摄影/对白/结构等）——' +
           '做视频/剧本前先 resources/list 看有哪些、resources/read 或 prompts/get 载入相关技能，再据其方法论写提示词、组装画布、驱动生成，产出质量更专业。',
       })
       return
@@ -426,7 +426,7 @@ export function createMcpProtocol(transport: McpTransport) {
                 _meta: {
                   ui: { resourceUri: uiUri },
                   'openai/outputTemplate': uiUri,
-                  'openai/toolInvocation/invoking': 'Nomi 生成中…',
+                  'openai/toolInvocation/invoking': 'iPix 生成中…',
                   'openai/toolInvocation/invoked': '已出图',
                 },
               }
@@ -474,7 +474,7 @@ export function createMcpProtocol(transport: McpTransport) {
         const built = tool.build(args) as Record<string, unknown>
         if (tool.name === 'nomi_start_playbook') {
           // initialize.clientInfo is self-declared, so it remains an audit label only. The stdio/RPC
-          // transport supplies authority from Nomi's signed per-client configuration capability.
+          // transport supplies authority from iPix's signed per-client configuration capability.
           built.actorId = clientHost
         }
         if (tool.name === 'nomi_decide_gate') {
@@ -484,8 +484,8 @@ export function createMcpProtocol(transport: McpTransport) {
               content: [{
                 type: 'text',
                 text: locale() === 'en'
-                  ? 'Not applied: this client cannot show Nomi\'s required human confirmation. Decide this gate in Nomi instead.'
-                  : '未生效：当前客户端无法显示 Nomi 强制的人为确认，请改在 Nomi 中决定这道门。',
+                  ? 'Not applied: this client cannot show iPix\'s required human confirmation. Decide this gate in iPix instead.'
+                  : '未生效：当前客户端无法显示 iPix 强制的人为确认，请改在 iPix 中决定这道门。',
               }],
               isError: true,
             })
@@ -513,7 +513,7 @@ export function createMcpProtocol(transport: McpTransport) {
         //（App 弹窗 / headless 自动放行），逐字节不变。headless 即便声明 elicitation 也不问——它本就是无人值守自动放行。
         //
         // ⚠️ 这里的 isAppOpen() 与付费路那条**不是同一个意思**，别跟着一起删：付费路曾用它猜「用户在不在
-        // Nomi 边上」（错的，已改判据）；这里它问的是「不这么做的话，会不会弹出一张应用内方案卡」——
+        // iPix 边上」（错的，已改判据）；这里它问的是「不这么做的话，会不会弹出一张应用内方案卡」——
         // 本分支的价值就是把那张卡搬进聊天。App 关着时 confirmPlan 恒 true（免费可撤、无人值守自动放行，
         // 见 createDiskGateway），没有卡可替代，去掉这个条件只会凭空多问一次 → 与「少让用户点」正相反。
         if (
@@ -560,9 +560,9 @@ export function createMcpProtocol(transport: McpTransport) {
           }))
           return
         }
-        // 付费生成必须有真人确认。**判据是「谁能替我们问到真人」，不是「Nomi 窗口开着没」**：
-        // 请求经 MCP 进来，本身就证明人正坐在调用方那头（Claude/Codex/Cursor）；窗口开着 ≠ 注意力在 Nomi
-        // （用户桌面上常年挂着 Nomi）。按窗口路由 → 只要 Nomi 开着就把人赶去 App 点一下，白跑一趟。
+        // 付费生成必须有真人确认。**判据是「谁能替我们问到真人」，不是「iPix 窗口开着没」**：
+        // 请求经 MCP 进来，本身就证明人正坐在调用方那头（Claude/Codex/Cursor）；窗口开着 ≠ 注意力在 iPix
+        // （用户桌面上常年挂着 iPix）。按窗口路由 → 只要 iPix 开着就把人赶去 App 点一下，白跑一趟。
         //  ① 客户端声明 elicitation → 就地弹在调用方（**不管 App 开没开**），真人 accept 才带 spendConfirmed 放行；
         //  ② 客户端问不了、App 开着 → 落到下面原样 invoke，由应用内确认卡兜底（唯一还能问到人的地方）；
         //  ③ 两者都没有 → 无处问真人 → 诚实报错，绝不静默花钱。
@@ -607,7 +607,7 @@ export function createMcpProtocol(transport: McpTransport) {
           }
           if (!transport.isAppOpen()) {
             reply(id, {
-              content: [{ type: 'text', text: '已暂停：当前客户端不支持弹确认，Nomi 也没打开——没有地方能确认这次付费生成。请打开 Nomi 后再触发生成。节点/提示词若已通过其它工具写入则已保存。' }],
+              content: [{ type: 'text', text: '已暂停：当前客户端不支持弹确认，iPix 也没打开——没有地方能确认这次付费生成。请打开 iPix 后再触发生成。节点/提示词若已通过其它工具写入则已保存。' }],
               isError: true,
             })
             return
@@ -690,8 +690,8 @@ export function createMcpProtocol(transport: McpTransport) {
       // 活 widget 资源（MCP Apps）：宿主预取渲染生成结果与 production Run 投影的活面板。
       const uiResources = [{
         uri: NOMI_LIVE_DRAFT_UI_URI,
-        name: 'Nomi 活生成面板',
-        description: '在支持 MCP Apps 的宿主里内嵌显示 Nomi 生成或制作 Run 的状态与安全预览。',
+        name: 'iPix 活生成面板',
+        description: '在支持 MCP Apps 的宿主里内嵌显示 iPix 生成或制作 Run 的状态与安全预览。',
         mimeType: MCP_APP_MIME_TYPE,
       }]
       reply(id, { resources: [...uiResources, ...skillResources] })
@@ -701,7 +701,7 @@ export function createMcpProtocol(transport: McpTransport) {
       reply(id, {
         resourceTemplates: [{
           uriTemplate: 'nomi://project/{projectId}/run/{runId}/artifact/{artifactId}',
-          name: 'Nomi production artifact',
+          name: 'iPix production artifact',
           description: 'Versioned script, storyboard, or production artifact content scoped to one local project and run.',
           mimeType: 'application/json',
         }],

@@ -9,7 +9,7 @@ const ERROR_HINT: Record<string, { zh: string; en: string; recover: Array<{ zh: 
     zh: '参考素材还没落到本地，生成端拿不到它',
     en: 'A referenced asset is not localized yet, so the generator cannot read it',
     recover: [
-      { zh: '在 Nomi 里打开该节点让素材完成本地化后重试', en: 'Open the node in Nomi to finish localizing the asset, then retry' },
+      { zh: '在 iPix 里打开该节点让素材完成本地化后重试', en: 'Open the node in iPix to finish localizing the asset, then retry' },
     ],
   },
   renderer_or_provider_unknown: {
@@ -17,16 +17,16 @@ const ERROR_HINT: Record<string, { zh: string; en: string; recover: Array<{ zh: 
     en: 'No renderer or provider configuration can execute this generation',
     recover: [
       { zh: '用 nomi_list_models 核对可用模型后换一个', en: 'Check available models with nomi_list_models and switch' },
-      { zh: '在 Nomi 设置里补齐该供应商的接入', en: 'Complete the provider setup in Nomi settings' },
+      { zh: '在 iPix 设置里补齐该供应商的接入', en: 'Complete the provider setup in iPix settings' },
     ],
   },
 }
 
 /** User projection deliberately has only four actions; protocol codes stay in structuredContent for machines. */
 const USER_ACTION_HINT: Record<string, { action: string; zh: string; en: string }> = {
-  human_approval_required: { action: 'in_nomi', zh: '请在 Nomi 确认这次生成。', en: 'Confirm this generation in Nomi.' },
-  receipt_invalid: { action: 'in_nomi', zh: '这次确认已失效，请在 Nomi 重新确认。', en: 'This confirmation is no longer valid; confirm again in Nomi.' },
-  receipt_expired: { action: 'in_nomi', zh: '确认已过期，请在 Nomi 重新确认。', en: 'The confirmation expired; confirm again in Nomi.' },
+  human_approval_required: { action: 'in_nomi', zh: '请在 iPix 确认这次生成。', en: 'Confirm this generation in iPix.' },
+  receipt_invalid: { action: 'in_nomi', zh: '这次确认已失效，请在 iPix 重新确认。', en: 'This confirmation is no longer valid; confirm again in iPix.' },
+  receipt_expired: { action: 'in_nomi', zh: '确认已过期，请在 iPix 重新确认。', en: 'The confirmation expired; confirm again in iPix.' },
   lease_required: { action: 'reselect_project', zh: '请重新选择当前项目。', en: 'Select the current project again.' },
   lease_invalid: { action: 'reselect_project', zh: '项目连接已失效，请重新选择当前项目。', en: 'The project connection expired; select the current project again.' },
   project_scope_changed: { action: 'reselect_project', zh: '项目范围已变化，请重新选择项目。', en: 'The project scope changed; select the project again.' },

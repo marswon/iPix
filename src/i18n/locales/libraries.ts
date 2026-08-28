@@ -1,6 +1,6 @@
 export const zhLibraries = {
   prompt: {
-    source: { mine: '我的库', nomi: 'Nomi 精选' },
+    source: { mine: '我的库', nomi: 'iPix 精选' },
     category: { all: '全部', image: '图片', video: '视频' },
     sentToCanvas: '已送上画布 · {{kind}}节点',
     storyboard: '分镜',
@@ -49,7 +49,7 @@ export const zhLibraries = {
     },
   },
   skill: {
-    source: { mine: '我的技能', builtin: 'Nomi 内置' },
+    source: { mine: '我的技能', builtin: 'iPix 内置' },
     authorName: 'AI 写技能',
     exportNotFound: '导出失败：没找到这个技能',
     deleteFailed: '删除失败',
@@ -85,7 +85,7 @@ export const zhLibraries = {
     missingModels: '缺{{providers}}模型，跑到生成会卡住',
     connect: '去接入',
     authorAction: '让 AI 帮我写技能',
-    authorDescription: '贴别家的技能 / 说需求 / 附文档，AI 转写成 Nomi 能用的',
+    authorDescription: '贴别家的技能 / 说需求 / 附文档，AI 转写成 iPix 能用的',
     assistant: '助手',
     noDescription: '暂无说明',
     useInCreation: '在创作区用',
@@ -149,7 +149,7 @@ type TranslationShape<T> = {
 
 export const enLibraries = {
   prompt: {
-    source: { mine: 'My library', nomi: 'Nomi picks' },
+    source: { mine: 'My library', nomi: 'iPix picks' },
     category: { all: 'All', image: 'Image', video: 'Video' },
     sentToCanvas: 'Sent to canvas · {{kind}} node',
     storyboard: 'Storyboard',
@@ -198,7 +198,7 @@ export const enLibraries = {
     },
   },
   skill: {
-    source: { mine: 'My skills', builtin: 'Built into Nomi' },
+    source: { mine: 'My skills', builtin: 'Built into iPix' },
     authorName: 'AI skill author',
     exportNotFound: 'Export failed: skill not found',
     deleteFailed: 'Delete failed',
@@ -235,7 +235,7 @@ export const enLibraries = {
     connect: 'Set up',
     authorAction: 'Have AI write a skill',
     authorDescription:
-      'Paste another skill, describe what you need, or attach documentation, and AI will convert it for Nomi',
+      'Paste another skill, describe what you need, or attach documentation, and AI will convert it for iPix',
     assistant: 'Assistant',
     noDescription: 'No description',
     useInCreation: 'Use in Creation',

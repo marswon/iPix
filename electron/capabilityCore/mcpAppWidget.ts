@@ -1,4 +1,4 @@
-// 能力核 · MCP Apps 活生成 widget（GUI 宿主内嵌的 Nomi 活面板）。
+// 能力核 · MCP Apps 活生成 widget（GUI 宿主内嵌的 iPix 活面板）。
 //
 // 协议依据（R5 实查 2026-08-02，来源 modelcontextprotocol/ext-apps `specification/2026-01-26/apps.mdx`
 // = MCP Apps 扩展 SEP-1865，扩展 id `io.modelcontextprotocol/ui`，Stable 2026-01-26）：
@@ -8,8 +8,8 @@
 //  - iframe 作为 MCP 客户端，用 JSON-RPC over window.parent.postMessage 与宿主通信
 //    （ui/initialize → ui/notifications/initialized；ui/notifications/size-changed；ui/open-link…）。
 //
-// 本 widget = 「Nomi 活生成」：把外部 agent 驱动的这次生成，在宿主对话里内嵌一张 Nomi 风格活面板——
-// 标题 + 逐镜缩略图（带状态徽标）+「在 Nomi 中打开」。宿主不支持该扩展时 tool 仍回文本兜底（不裸奔）。
+// 本 widget = 「iPix 活生成」：把外部 agent 驱动的这次生成，在宿主对话里内嵌一张 iPix 风格活面板——
+// 标题 + 逐镜缩略图（带状态徽标）+「在 iPix 中打开」。宿主不支持该扩展时 tool 仍回文本兜底（不裸奔）。
 // 纯字符串（无 electron/DOM 依赖）→ 可裸 node 单测 serving，也可独立浏览器渲染截图验。
 import { projectGenerationRecovery, type GenerationRecoveryProjection } from './generationRecoveryProjection'
 
@@ -84,7 +84,7 @@ export type NomiDraftState = {
   shots?: NomiDraftShot[]
   projectId?: string
   projectName?: string
-  /** 深链：宿主支持 ui/open-link 时「在 Nomi 中打开」跳这里。 */
+  /** 深链：宿主支持 ui/open-link 时「在 iPix 中打开」跳这里。 */
   deepLink?: string
   runId?: string
   /** 第一个 waiting 门；卡内渲染确认区（样张桌面形态贰/肆幕）。 */
@@ -192,13 +192,13 @@ export function buildNomiRunFromProjection(args: {
     ? candidateDeepLink
     : (projectId && runId ? `nomi://project/${encodeURIComponent(projectId)}/run/${encodeURIComponent(runId)}` : undefined)
   const fallbackMessage = recovery?.message || (status === 'unknown'
-    ? '已查询 Nomi，当前结果未提供运行状态。'
+    ? '已查询 iPix，当前结果未提供运行状态。'
     : status === 'available'
-      ? 'Nomi 已准备好当前结果，未自动批准付费或导出。'
+      ? 'iPix 已准备好当前结果，未自动批准付费或导出。'
       : undefined)
   return {
     kind: 'production',
-    title: `Nomi · ${typeof playbook.name === 'string' ? playbook.name : '制作 Run'}`,
+    title: `iPix · ${typeof playbook.name === 'string' ? playbook.name : '制作 Run'}`,
     status,
     ...(typeof latestEvent?.message === 'string' && latestEvent.message
       ? { message: latestEvent.message }
@@ -236,7 +236,7 @@ export function buildNomiDraftFromGenerate(args: {
   const thumbnailUrl = signedPreview || safeWidgetImageUrl(rawUrl)
   const isVideo = String(args.intent || assets[0]?.type || '') === 'video'
   const title = (args.prompt || '').trim().slice(0, 40) || (isVideo ? '一段视频' : '一张画面')
-  // 交付③：工程级深链（无 runId）——widget 的「在 Nomi 打开」据此可跳。上游给了更具体的链且**形状合法**才采信
+  // 交付③：工程级深链（无 runId）——widget 的「在 iPix 打开」据此可跳。上游给了更具体的链且**形状合法**才采信
   //（run 级严格正则，与 run 路同族）；否则回退工程级严格链（0b：项目级深链也走等价严格校验，不再松放）。
   const candidateDeep = typeof r.openInNomi === 'string' ? r.openInNomi : ''
   const projectDeep = args.projectId ? `nomi://project/${encodeURIComponent(args.projectId)}` : undefined
@@ -245,7 +245,7 @@ export function buildNomiDraftFromGenerate(args: {
     : (projectDeep && PROJECT_DEEP_LINK_RE.test(projectDeep) ? projectDeep : undefined)
   return {
     kind: 'generation',
-    title: `Nomi · ${title}`,
+    title: `iPix · ${title}`,
     status,
     ...(typeof r.error === 'string' && r.error ? { message: r.error } : {}),
     shots: [
@@ -263,7 +263,7 @@ export function buildNomiDraftFromGenerate(args: {
 }
 
 /**
- * 自包含 widget HTML（inline CSS/JS，CSP 下无外部依赖）。Nomi 调色板经 oklch + prefers-color-scheme
+ * 自包含 widget HTML（inline CSS/JS，CSP 下无外部依赖）。iPix 调色板经 oklch + prefers-color-scheme
  * 光/暗双模（与 tailwind.config 一致），亦响应宿主 ui/notifications/host-context-changed 的主题。
  */
 export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
@@ -271,7 +271,7 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nomi 活生成</title>
+<title>iPix 活生成</title>
 <style>
   :root {
     --paper: oklch(1 0 0);
@@ -368,17 +368,17 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
 <div class="card" id="root">
   <div class="head">
     <span class="mark">N</span>
-    <span class="title" id="title">Nomi 活生成</span>
+    <span class="title" id="title">iPix 活生成</span>
     <span class="badge" id="badge">等待中</span>
   </div>
   <div class="body" id="bodyWrap">
-  <div class="empty" id="empty">等待 Nomi 传入生成或制作 Run…</div>
+  <div class="empty" id="empty">等待 iPix 传入生成或制作 Run…</div>
     <p class="msg" id="msg" hidden></p>
     <div class="gate" id="gate" hidden></div>
     <div class="grid" id="grid"></div>
   </div>
   <div class="foot" id="foot" hidden>
-    <button class="btn primary" id="openBtn" type="button">在 Nomi 打开</button>
+    <button class="btn primary" id="openBtn" type="button">在 iPix 打开</button>
     <span class="hint" id="hint"></span>
   </div>
 </div>
@@ -390,10 +390,10 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
   // B6 gate 卡：direction/sample 卡内可批（tools/call 代理，SEP-1865）；钱与导出只读——不给一键批钱。
   var GATE_HINT = {
     direction: "选一个方向；批准前不会调用付费模型。",
-    sample: "上方就是样片；满意就继续批量，不满意去 Nomi 调整。",
-    contract: "预算确认在 Nomi 弹窗或对话里完成（金额不做卡内一键批）。",
-    export: "导出确认在 Nomi 或对话里完成。",
-    stage: "这一步确认在 Nomi 或对话里完成。"
+    sample: "上方就是样片；满意就继续批量，不满意去 iPix 调整。",
+    contract: "预算确认在 iPix 弹窗或对话里完成（金额不做卡内一键批）。",
+    export: "导出确认在 iPix 或对话里完成。",
+    stage: "这一步确认在 iPix 或对话里完成。"
   };
   var state = null;
   var rpcId = 0;
@@ -430,7 +430,7 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
     var hint = document.getElementById("hint");
     if (!state) { empty.hidden = false; grid.innerHTML = ""; foot.hidden = true; reportSize(); return; }
     empty.hidden = true;
-    title.textContent = state.title || (state.kind === "production" ? "Nomi 制作 Run" : "Nomi 活生成");
+    title.textContent = state.title || (state.kind === "production" ? "iPix 制作 Run" : "iPix 活生成");
     var st = state.status || "unknown";
     badge.textContent = STATUS_LABEL[st] || st;
     badge.className = "badge " + st;
@@ -471,7 +471,7 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
     }).join("");
     // 可批的门（direction/sample）summary 已把话说清 → 不再重复 kind 提示（R2）；钱/导出门的只读边界恒显。
     var hintText = decideFailed
-      ? "这个宿主暂不支持卡内确认——去 Nomi 或在对话里说即可。"
+      ? "这个宿主暂不支持卡内确认——去 iPix 或在对话里说即可。"
       : (canDecide && g.summary ? "" : (GATE_HINT[g.kind] || GATE_HINT.stage));
     html += '<div class="gate-foot">'
       + (canDecide ? '<button type="button" class="btn primary" id="decideBtn"' + (decideInFlight ? " disabled" : "") + ">"
@@ -498,7 +498,7 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
     decideReqId = "view-" + rpcId;
     post({ jsonrpc: "2.0", id: decideReqId, method: "tools/call", params: { name: "nomi_decide_gate", arguments: args } });
     renderGate();
-    // 宿主不支持 tools/call 代理时不会回帧：8s 后按失败降级（按钮复活 + 指路 Nomi/对话）。
+    // 宿主不支持 tools/call 代理时不会回帧：8s 后按失败降级（按钮复活 + 指路 iPix/对话）。
     setTimeout(function () { if (decideInFlight) { decideInFlight = false; decideFailed = true; renderGate(); } }, 8000);
   }
 
@@ -518,7 +518,7 @@ export const NOMI_LIVE_DRAFT_WIDGET_HTML = `<!DOCTYPE html>
       decideInFlight = false;
       decideReqId = null;
       if (m.error || (m.result && m.result.isError)) { decideFailed = true; }
-      else if (state) { state.gate = undefined; state.message = "已提交决定，等待 Nomi 状态刷新…"; }
+      else if (state) { state.gate = undefined; state.message = "已提交决定，等待 iPix 状态刷新…"; }
       render();
       return;
     }

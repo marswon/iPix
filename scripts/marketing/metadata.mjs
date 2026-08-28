@@ -31,7 +31,7 @@ export function buildMetadata(locale, content, shared) {
         {
           '@type': 'WebSite',
           '@id': websiteId,
-          name: 'Nomi',
+          name: 'iPix',
           url: `${shared.siteUrl}/`,
           inLanguage: ['zh-CN', 'en'],
         },
@@ -49,7 +49,7 @@ export function buildMetadata(locale, content, shared) {
         {
           '@type': 'SoftwareApplication',
           '@id': applicationId,
-          name: 'Nomi',
+          name: 'iPix',
           applicationCategory: 'MultimediaApplication',
           operatingSystem: 'macOS, Windows',
           codeRepository: shared.repositoryUrl,

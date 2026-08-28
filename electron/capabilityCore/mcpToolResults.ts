@@ -36,9 +36,9 @@ const RUN_STATUS_HINT: Record<string, { zh: string; en: string; nextZh: string; 
   running: { zh: '制作进行中', en: 'running', nextZh: '可随时说「先停一下」暂停', nextEn: 'Say "pause" anytime to pause the run', action: 'watch_or_pause' },
   pausing: { zh: '正在暂停', en: 'pausing', nextZh: '正在安全停下，已提交的镜头会先收尾', nextEn: 'Stopping safely; in-flight shots will settle first', action: 'wait' },
   paused: { zh: '已暂停', en: 'paused', nextZh: '已提交的花费不退但产物保留；未提交的不再花钱。可继续或取消', nextEn: 'Submitted spend is not refundable but its output is kept; nothing new will be charged. Resume or cancel', action: 'resume_or_cancel' },
-  awaiting_rough_cut_review: { zh: '粗剪等你审阅', en: 'rough cut awaiting review', nextZh: '下一步：在 Nomi 里过一遍粗剪', nextEn: 'Next: review the rough cut in Nomi', action: 'review_rough_cut' },
+  awaiting_rough_cut_review: { zh: '粗剪等你审阅', en: 'rough cut awaiting review', nextZh: '下一步：在 iPix 里过一遍粗剪', nextEn: 'Next: review the rough cut in iPix', action: 'review_rough_cut' },
   needs_attention: { zh: '需要处理', en: 'needs attention', nextZh: '有任务卡住了，看错误详情选恢复动作', nextEn: 'A job is stuck; check the error details for recovery actions', action: 'recover' },
-  completed: { zh: '已完成', en: 'completed', nextZh: '产物已保存到项目，可在 Nomi 里查看', nextEn: 'Artifacts are saved to the project; open them in Nomi', action: 'open_in_nomi' },
+  completed: { zh: '已完成', en: 'completed', nextZh: '产物已保存到项目，可在 iPix 里查看', nextEn: 'Artifacts are saved to the project; open them in iPix', action: 'open_in_nomi' },
   cancelled: { zh: '已取消', en: 'cancelled', nextZh: '未提交的任务不计费', nextEn: 'Unsubmitted jobs are not charged', action: 'none' },
 }
 
@@ -138,7 +138,7 @@ function buildArtifactBodyOutcome(
       ? (status === 'adopted' || str(args.decision) === 'approved'
           ? L(ctx, '✓ 产物版本已批准', '✓ Artifact version approved')
           : L(ctx, '✓ 产物审阅决定已记录', '✓ Artifact review decision recorded'))
-      : `[Nomi] ${kind} · ${status}`
+      : `[iPix] ${kind} · ${status}`
   const text = [
     `${head} · ${artifactId}`,
     `${L(ctx, '状态', 'status')} ${status}`,
@@ -147,7 +147,7 @@ function buildArtifactBodyOutcome(
     previewUrl ? `${L(ctx, '预览', 'preview')} ${previewUrl}` : null,
     isRevision && str(value.parentArtifactId) ? `${L(ctx, '基于', 'based on')} ${str(value.parentArtifactId)}${value.sourceVersion ? ` @${String(value.sourceVersion)}` : ''}` : null,
     bodyText ? `${L(ctx, '内容', 'content')}\n${bodyText}` : null,
-  ].filter(Boolean).join('\n') + (openInNomi ? `\n${L(ctx, '在 Nomi 打开', 'Open in Nomi')} ${openInNomi}` : '')
+  ].filter(Boolean).join('\n') + (openInNomi ? `\n${L(ctx, '在 iPix 打开', 'Open in iPix')} ${openInNomi}` : '')
   return {
     text,
     outcome: {
@@ -345,7 +345,7 @@ function buildListModelsOutcome(ctx: Ctx, value: Record<string, unknown>): ToolO
   const models = Array.isArray(value.models) ? (value.models as Array<Record<string, unknown>>) : []
   if (models.length === 0) {
     return {
-      text: L(ctx, '没有已启用的模型。请先在 Nomi 应用的模型接入里添加并配置 API Key。', 'No enabled models. Add and configure one in Nomi settings first.'),
+      text: L(ctx, '没有已启用的模型。请先在 iPix 应用的模型接入里添加并配置 API Key。', 'No enabled models. Add and configure one in iPix settings first.'),
       outcome: { kind: 'model_list', total: 0, usable: 0, models: [] },
     }
   }
@@ -395,7 +395,7 @@ export function buildToolOutcome(
   const openInNomi = str(value.openInNomi)
   const runId = str(value.runId) || str(args.runId)
   const projectId = str(value.projectId) || str(args.projectId)
-  const openLine = openInNomi ? `\n${L(ctx, '在 Nomi 打开', 'Open in Nomi')} ${openInNomi}` : ''
+  const openLine = openInNomi ? `\n${L(ctx, '在 iPix 打开', 'Open in iPix')} ${openInNomi}` : ''
 
   if (toolName === 'nomi_list_models') {
     // 交付1：模型清单转述——**只把 keyStatus=ok 的说成"可用"**，missing/locked 各带缺口一句话（R15 双语）。
@@ -447,7 +447,7 @@ export function buildToolOutcome(
     // B1：方向门在等 + 已有候选 → 把三选一清单摊进转述（模型据此走 elicitation 问真人）。
     const direction = waitingDirectionGate(value)
     const candidateLines = direction ? directionCandidateLines(ctx, direction.candidates) : []
-    // B2：样片门在等 → 提示样片就绪、去 Nomi 过目、满意批量 / 换风格重来（终端看不了图，给深链）。
+    // B2：样片门在等 → 提示样片就绪、去 iPix 过目、满意批量 / 换风格重来（终端看不了图，给深链）。
     const sampleGateId = waitingSampleGateId(value)
     const sampleLines = sampleGateId ? [
       L(ctx, '样片就绪：首镜已生成，先过目再批量剩余镜头。', 'Sample ready: the first shot is generated — review it before the full batch.'),
@@ -470,8 +470,8 @@ export function buildToolOutcome(
         `第 ${shotGate.index} 镜（${shotGate.nodeId}）提交前正在等你确认。`,
         `Shot ${shotGate.index} (${shotGate.nodeId}) is waiting for approval before provider submission.`),
       L(ctx,
-        `  ${shotTarget ? `${shotTarget}；` : ''}批准前不会调用供应商，也不会产生这镜的费用。请回 Nomi 决定。`,
-        `  ${shotTarget ? `${shotTarget}; ` : ''}no provider call or charge occurs before approval. Decide in Nomi.`),
+        `  ${shotTarget ? `${shotTarget}；` : ''}批准前不会调用供应商，也不会产生这镜的费用。请回 iPix 决定。`,
+        `  ${shotTarget ? `${shotTarget}; ` : ''}no provider call or charge occurs before approval. Decide in iPix.`),
     ] : []
     const jobsArr = Array.isArray(value.jobs) ? (value.jobs as Array<Record<string, unknown>>) : []
     const unknownJobs = jobsArr.filter((job) => str(job.status) === 'submission_unknown')
@@ -483,7 +483,7 @@ export function buildToolOutcome(
       : undefined
     const reconciliationLines = unknownJobs.length ? [
       L(ctx,
-        `有 ${unknownJobs.length} 个任务的供应商状态还没核实；正在等待对账，Nomi 不会自动重提。`,
+        `有 ${unknownJobs.length} 个任务的供应商状态还没核实；正在等待对账，iPix 不会自动重提。`,
         `${unknownJobs.length} job(s) have an unverified provider state; waiting for reconciliation and no automatic resubmit.`,
       ),
       `  ${recovery?.message}`,
@@ -491,7 +491,7 @@ export function buildToolOutcome(
     // B3：状态转述带当前信任档位（非默认时才占一行，避免默认档噪音）。
     const trustLevel = str(value.trustLevel) || 'key_confirm'
     const text = [
-      `[Nomi] ${runId} · ${hint ? L(ctx, hint.zh, hint.en) : status} · ${str(value.stageId) || 'unknown'}`,
+      `[iPix] ${runId} · ${hint ? L(ctx, hint.zh, hint.en) : status} · ${str(value.stageId) || 'unknown'}`,
       budgetLine ? `  ${budgetLine}` : null,
       trustLevel !== 'key_confirm' ? `  ${L(ctx, '信任档位', 'Trust level')}：${trustLabel(ctx, trustLevel)}` : null,
       preview.url ? `${L(ctx, '最新预览', 'Latest preview')} ${str(preview.url)}（${str(preview.expiresAt) || L(ctx, '限时', 'expiring')}）` : null,
@@ -533,8 +533,8 @@ export function buildToolOutcome(
 
   if (toolName === 'nomi_subscribe_run') {
     const events = Array.isArray(value.events) ? (value.events as Array<Record<string, unknown>>) : []
-    const lines = events.map((event) => `[Nomi] ${str(event.type) || 'event'} · ${str(event.message)}`)
-    const text = `${lines.length ? lines.join('\n') : `[Nomi] ${L(ctx, '暂无新的重要事件', 'no new meaningful events')}`}\nnext cursor ${String(value.nextCursor ?? 0)}`
+    const lines = events.map((event) => `[iPix] ${str(event.type) || 'event'} · ${str(event.message)}`)
+    const text = `${lines.length ? lines.join('\n') : `[iPix] ${L(ctx, '暂无新的重要事件', 'no new meaningful events')}`}\nnext cursor ${String(value.nextCursor ?? 0)}`
     return {
       text,
       outcome: {
@@ -550,10 +550,10 @@ export function buildToolOutcome(
     const nomiUri = str(value.nomiUri)
     const artifactOpenInNomi = safeNomiDeepLink(openInNomi)
     const text = [
-      `[Nomi] ${str(value.kind) || 'artifact'} · ${str(value.status) || 'unknown'} · ${str(value.artifactId)}`,
+      `[iPix] ${str(value.kind) || 'artifact'} · ${str(value.status) || 'unknown'} · ${str(value.artifactId)}`,
       nomiUri ? `${L(ctx, '产物', 'Artifact')} ${nomiUri}` : null,
       preview.url ? `${L(ctx, '预览', 'Preview')} ${str(preview.url)}（${str(preview.expiresAt) || L(ctx, '限时', 'expiring')}）` : null,
-    ].filter(Boolean).join('\n') + (artifactOpenInNomi ? `\n${L(ctx, '在 Nomi 打开', 'Open in Nomi')} ${artifactOpenInNomi}` : '')
+    ].filter(Boolean).join('\n') + (artifactOpenInNomi ? `\n${L(ctx, '在 iPix 打开', 'Open in iPix')} ${artifactOpenInNomi}` : '')
     return {
       text,
       outcome: {
@@ -583,11 +583,11 @@ export function buildToolOutcome(
       : []
     const bindings = Array.isArray(value.bindings) ? value.bindings : []
     const text = [
-      `✓ ${L(ctx, '分镜已落到 Nomi 画布', 'Storyboard materialized into the Nomi canvas')} · ${artifactId}`,
+      `✓ ${L(ctx, '分镜已落到 iPix 画布', 'Storyboard materialized into the iPix canvas')} · ${artifactId}`,
       version !== null ? `${L(ctx, '分镜版本', 'storyboard version')} ${version}` : null,
       `${L(ctx, '画布节点', 'canvas nodes')} ${createdNodeIds.length} · ${L(ctx, '制作绑定', 'production bindings')} ${bindings.length}`,
       createdNodeIds.length ? `${L(ctx, '节点 id', 'node ids')} ${createdNodeIds.slice(0, 12).join(', ')}${createdNodeIds.length > 12 ? '…' : ''}` : null,
-      L(ctx, '还没有批准预算，也没有调用付费模型；下一步在 Nomi 查看画布并批准制作合同。', 'No budget was approved and no paid model was called; next, review the canvas in Nomi and approve the production contract.'),
+      L(ctx, '还没有批准预算，也没有调用付费模型；下一步在 iPix 查看画布并批准制作合同。', 'No budget was approved and no paid model was called; next, review the canvas in iPix and approve the production contract.'),
     ].filter(Boolean).join('\n') + openLine
     return {
       text,
@@ -747,7 +747,7 @@ export function buildToolOutcome(
       verifyLine,
       ...advisoryLines,
       JSON.stringify(dump, null, 2),
-      deepLink ? `${L(ctx, '在 Nomi 打开', 'Open in Nomi')} ${deepLink}` : null,
+      deepLink ? `${L(ctx, '在 iPix 打开', 'Open in iPix')} ${deepLink}` : null,
     ].filter(Boolean).join('\n')
     return {
       text,

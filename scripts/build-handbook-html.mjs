@@ -24,7 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = resolve(__dirname, '../marketing/handbook.html')
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8'))
 const handbookUrl = `${shared.siteUrl}${shared.handbookUrl}`
-const handbookDescription = `${HANDBOOK_SUBTITLE} 按照安装、模型接入、分镜、生成、时间线与导出顺序，快速完成 Nomi 的第一条 AI 视频。`
+const handbookDescription = `${HANDBOOK_SUBTITLE} 按照安装、模型接入、分镜、生成、时间线与导出顺序，快速完成 iPix 的第一条 AI 视频。`
 const handbookImage = `${shared.siteUrl}/assets/social-preview-zh.jpg`
 const handbookJsonLd = JSON.stringify({
   '@context': 'https://schema.org',
@@ -32,7 +32,7 @@ const handbookJsonLd = JSON.stringify({
     {
       '@type': 'WebSite',
       '@id': `${shared.siteUrl}/#website`,
-      name: 'Nomi',
+      name: 'iPix',
       url: `${shared.siteUrl}/`,
       inLanguage: ['zh-CN', 'en'],
     },
@@ -49,7 +49,7 @@ const handbookJsonLd = JSON.stringify({
     {
       '@type': 'SoftwareApplication',
       '@id': `${shared.siteUrl}/#application`,
-      name: 'Nomi',
+      name: 'iPix',
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'macOS, Windows',
       codeRepository: shared.repositoryUrl,
@@ -94,7 +94,7 @@ const html = `<!DOCTYPE html>
 <meta name="theme-color" content="#faf9f6" />
 <link rel="canonical" href="${esc(handbookUrl)}" />
 <meta property="og:type" content="article" />
-<meta property="og:site_name" content="Nomi" />
+<meta property="og:site_name" content="iPix" />
 <meta property="og:locale" content="zh_CN" />
 <meta property="og:title" content="${esc(HANDBOOK_TITLE)}" />
 <meta property="og:description" content="${esc(handbookDescription)}" />
@@ -173,7 +173,7 @@ const html = `<!DOCTYPE html>
   <h2>卡住了看这里</h2>
   <div class="grid" style="margin-top:8px">${gotchas}</div>
 
-  <p class="foot">Nomi · 本地优先 AI 视频创作台 · nomiaqm.com</p>
+  <p class="foot">iPix · 本地优先 AI 视频创作台 · nomiaqm.com</p>
 </div>
 </body>
 </html>

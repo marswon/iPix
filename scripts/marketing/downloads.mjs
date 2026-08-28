@@ -1,9 +1,9 @@
 const releaseBase = 'https://github.com/aqm857886159/Nomi/releases/latest/download'
 
 export const downloadUrls = Object.freeze({
-  windowsX64: `${releaseBase}/Nomi-windows-setup.exe`,
-  macArm64: `${releaseBase}/Nomi-mac-arm64.dmg`,
-  macX64: `${releaseBase}/Nomi-mac-intel.dmg`,
+  windowsX64: `${releaseBase}/iPix-windows-setup.exe`,
+  macArm64: `${releaseBase}/iPix-mac-arm64.dmg`,
+  macX64: `${releaseBase}/iPix-mac-intel.dmg`,
 })
 
 export function selectDownload({ platform = '', userAgent = '', architecture = '' } = {}) {

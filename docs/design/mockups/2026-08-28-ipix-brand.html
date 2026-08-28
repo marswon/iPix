@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iPix 品牌样张</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #272624; background: #f5f5f3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 40px; }
+    main { width: min(1040px, 100%); margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }
+    p { margin: 0; color: #65625e; line-height: 1.6; }
+    .board { margin-top: 28px; background: white; border: 1px solid #deddd9; border-radius: 8px; overflow: hidden; }
+    .header { height: 64px; display: flex; align-items: center; padding: 0 22px; border-bottom: 1px solid #e7e6e2; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 650; }
+    .brand b { color: #357bc3; font-weight: 650; }
+    .matrix { display: grid; grid-template-columns: 1.35fr 1fr; }
+    .panel { padding: 28px; min-height: 270px; }
+    .panel + .panel { border-left: 1px solid #e7e6e2; }
+    h2 { margin: 0 0 20px; font-size: 14px; font-weight: 650; color: #65625e; letter-spacing: 0; }
+    .sizes { display: flex; align-items: end; gap: 30px; min-height: 150px; }
+    .sample { display: grid; justify-items: center; gap: 10px; color: #77736e; font-size: 12px; }
+    .app-icon { width: 150px; height: 150px; display: grid; place-items: center; border-radius: 34px; background: #ececea; box-shadow: 0 15px 30px rgba(39,38,36,.15); }
+    .dark { background: #191918; color: #f7f7f4; }
+    .dark .header { border-color: #343331; }
+    .dark .brand b { color: #69a3df; }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>iPix 品牌样张</h1>
+    <p>像素取景框 + 小写 i。保留现有工作台的克制感，应用图标、字标和加载标共用一个矢量真相源。</p>
+    <section class="board">
+      <div class="header">
+        <div class="brand">
+          <svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true">
+            <rect width="28" height="28" rx="7" fill="#272624"/>
+            <path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="square"/>
+            <circle cx="14" cy="9" r="1.75" fill="#4f91d4"/>
+            <rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/>
+          </svg>
+          <span>i<b>Pix</b></span>
+        </div>
+      </div>
+      <div class="matrix">
+        <div class="panel">
+          <h2>实际界面尺寸</h2>
+          <div class="sizes">
+            <div class="sample"><svg width="16" height="16" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#272624"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#4f91d4"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/></svg><span>16</span></div>
+            <div class="sample"><svg width="24" height="24" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#272624"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#4f91d4"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/></svg><span>24</span></div>
+            <div class="sample"><svg width="40" height="40" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#272624"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#4f91d4"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/></svg><span>40</span></div>
+            <div class="sample"><svg width="96" height="96" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#272624"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#4f91d4"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/></svg><span>96</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>桌面应用图标</h2>
+          <div class="app-icon">
+            <svg width="118" height="118" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#272624"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#4f91d4"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#4f91d4"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="board dark">
+      <div class="header">
+        <div class="brand">
+          <svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#353432"/><path d="M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="9" r="1.75" fill="#69a3df"/><rect x="12.5" y="12" width="3" height="8.5" rx="1" fill="#69a3df"/></svg>
+          <span>i<b>Pix</b></span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

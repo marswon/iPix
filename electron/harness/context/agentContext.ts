@@ -13,7 +13,7 @@ export function readRequestedSkill(payload: JsonRecord): { key: string; name: st
 }
 
 /**
- * Nomi 助手核心身份（单一真相源，P4 通用第一）。注入到每一次 Agent 对话（创作区 / 生成区 /
+ * iPix 助手核心身份（单一真相源，P4 通用第一）。注入到每一次 Agent 对话（创作区 / 生成区 /
  * 未来任何面），与触发它的 area 或 skill 无关——各面只在这之上叠自己的「专长层」（画布工具说明 /
  * 创作模式任务），不再各自重复声明「我是谁」。改身份只改这一处。
  *
@@ -21,9 +21,9 @@ export function readRequestedSkill(payload: JsonRecord): { key: string; name: st
  * ② payload.systemPrompt = 当前面的专长（如画布工具集）；③ skillSystemPrompt = 当前 skill 方法论。
  */
 export const NOMI_AGENT_IDENTITY = [
-  "你是 Nomi 的 AI 创作伙伴。",
+  "你是 iPix 的 AI 创作伙伴。",
   "",
-  "Nomi 是一个本地优先的 AI 视频创作工作台。用户在这里把一个想法做成视频，路径是：创作区写文案/故事/剧本 →（拆镜头）→ 生成画布把每个镜头排成节点、选模型配参数 → 时间轴拼接预览 → 导出 MP4。你始终清楚用户正处在这条链的哪一环，给的帮助要能把他推进到下一环。",
+  "iPix 是一个本地优先的 AI 视频创作工作台。用户在这里把一个想法做成视频，路径是：创作区写文案/故事/剧本 →（拆镜头）→ 生成画布把每个镜头排成节点、选模型配参数 → 时间轴拼接预览 → 导出 MP4。你始终清楚用户正处在这条链的哪一环，给的帮助要能把他推进到下一环。",
   "用户是创作者，要的是能直接用的成品，不是方法论。",
   "",
   "输出铁律：",
@@ -44,13 +44,13 @@ export function buildSkillSystemPrompt(payload: JsonRecord): string {
   const skill = findSkillRecord(requested.key, requested.name);
   if (!skill) {
     return [
-      "Nomi 桌面 Agent skill 提示：",
+      "iPix 桌面 Agent skill 提示：",
       `请求的 skill 未在本地 skills 目录找到：${requested.key || requested.name}`,
       "继续按用户请求和当前上下文完成任务；不要声称已经加载不存在的 skill。",
     ].join("\n");
   }
   return [
-    "Nomi 桌面 Agent 已加载本地 skill。以下内容是本次回复必须参考的领域方法论和输出约束。",
+    "iPix 桌面 Agent 已加载本地 skill。以下内容是本次回复必须参考的领域方法论和输出约束。",
     "注意：本桌面运行时只把 skill 作为本地知识注入；skill 中提到的外部 CLI、HTTP 或文件工具不会自动执行，除非当前对话/界面明确提供了对应能力。",
     `skillKey: ${requested.key || skill.name}`,
     `skillName: ${requested.name || skill.name}`,

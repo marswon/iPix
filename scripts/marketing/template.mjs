@@ -27,7 +27,7 @@ function renderMetadata(metadata) {
 <link rel="canonical" href="${escapeAttr(metadata.canonical)}" />
 ${alternates}
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="Nomi" />
+<meta property="og:site_name" content="iPix" />
 <meta property="og:locale" content="${escapeAttr(metadata.openGraph.locale)}" />
 <meta property="og:title" content="${escapeAttr(metadata.openGraph.title)}" />
 <meta property="og:description" content="${escapeAttr(metadata.openGraph.description)}" />
@@ -47,9 +47,9 @@ function renderNav(content, shared, locale) {
   const localeChoice = locale === 'zh-CN' ? 'en' : 'zh-CN'
   return `<header class="site-header">
   <nav class="nav" aria-label="${escapeAttr(content.nav.ariaLabel)}">
-    <a class="brand" href="${escapeAttr(content.path)}" aria-label="Nomi">
+    <a class="brand" href="${escapeAttr(content.path)}" aria-label="iPix">
       <img src="/assets/nomi-logo.svg" width="30" height="30" alt="" />
-      <span>Nomi</span>
+      <span>iPix</span>
     </a>
     <div class="nav-links" id="nav-links">
       <a href="#cost">${escapeText(content.nav.why)}</a>

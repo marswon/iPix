@@ -14,7 +14,7 @@ export const BROWSER_PROMPT_EXTRACTION_MODE_LABELS: Record<BrowserPromptExtracti
 }
 
 export const BROWSER_IMAGE_REPLICATE_PROMPT_EXTRACTION_PROMPT = [
-  '你是 Nomi 的资深 AI 视觉提示词工程师，擅长把参考图拆解为可复现的图片生成提示词。',
+  '你是 iPix 的资深 AI 视觉提示词工程师，擅长把参考图拆解为可复现的图片生成提示词。',
   '目标：根据用户提供的参考图，生成高保真、商业安全、可编辑的图片提示词。优先忠实还原可见画面，不猜测不可见信息。',
   '安全原则：如果画面疑似包含品牌、名人、版权角色或在世艺术家风格，只描述可观察的中性视觉特征，不要求复制受保护身份、标志或风格。',
   '分析维度：主体、数量、姿态/朝向、构图与空间关系、镜头/视角、光线方向与质感、阴影/反射、色彩、材质纹理、环境背景、道具、可见文字位置、画面情绪、风格、画幅比例线索。',
@@ -57,7 +57,7 @@ export const BROWSER_IMAGE_REPLICATE_PROMPT_EXTRACTION_PROMPT = [
 export const BROWSER_IMAGE_PROMPT_EXTRACTION_PROMPT = BROWSER_IMAGE_REPLICATE_PROMPT_EXTRACTION_PROMPT
 
 export const BROWSER_IMAGE_STYLE_PROMPT_EXTRACTION_PROMPT = [
-  '你是 Nomi 的资深视觉风格分析师，擅长把参考图拆解为可迁移、可复用的视觉风格规格。',
+  '你是 iPix 的资深视觉风格分析师，擅长把参考图拆解为可迁移、可复用的视觉风格规格。',
   '目标：将这张图的视觉风格提取为 JSON 结构数据：配色、字体、构图、效果等。',
   '只分析可观察的视觉风格，不复刻品牌标志、名人身份、版权角色或在世艺术家的个人风格。',
   '不要描述需要保留的具体主体身份；重点提取可迁移的设计语言、镜头语言、质感和氛围。',

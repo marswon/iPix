@@ -32,7 +32,7 @@ export function renderSocialCard(locale) {
 </style></head>
 <body><main class="card">
   <section class="copy">
-    <div class="identity"><img src="${logo}" alt="" /><span>Nomi</span></div>
+    <div class="identity"><img src="${logo}" alt="" /><span>iPix</span></div>
     <p class="eyebrow">${content.eyebrow}</p>
     <h1 class="claim">${content.lead}<em>${content.emphasis}</em></h1>
     <p class="agentic">${content.agentic}</p>

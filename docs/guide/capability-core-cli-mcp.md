@@ -218,14 +218,14 @@ Claude Code 会依次调 `nomi_create_project` → `nomi_list_models` → `nomi_
 
 | 报错 | 原因 | 解法 |
 |---|---|---|
-| `未找到 token` | 没生成过 token | 启动一次 Nomi（见 §1.2） |
-| `API key missing: <vendor>` | 该渠道没填 key，或 key 没解开 | 在 Nomi 里给该渠道填 API Key；确认用的是你平时启动的那个 Nomi（key 按 app 身份加密，换身份解不开） |
+| `未找到 token` | 没生成过 token | 启动一次 iPix（见 §1.2） |
+| `API key missing: <vendor>` | 该渠道没填 key，或 key 没解开 | 在 iPix 里给该渠道填 API Key；确认用的是你平时启动的那个 iPix（key 按 app 身份加密，换身份解不开） |
 | `Model is not enabled: <model>` | 模型没启用 | 先 `nomi models` 看可用列表，用列出来的 vendor/modelKey |
 | `headless host 未构建` | dev 下没 build | 先 `pnpm run build:electron` |
 | `vendor and request are required` | 命令参数不全 | 对照 §5 补齐 vendor / modelKey / intent / 提示词 |
-| `旧配置缺少客户端身份凭据` | 升级前配置只有 stdio 开关，没有本机客户端签名 | 在 Nomi 接入卡对该客户端点「重新接入」 |
-| `untrusted-host` | 当前客户端没有有效签名，或尚未在 Nomi 设置中获准发起草稿 | 重新接入对应客户端，再到「自动化与权限」开启该客户端 |
-| `找不到 Nomi 的钥匙串` | 当前启动的是另一份应用身份、隔离测试配置或搬动后的 app，系统钥匙串不会把原凭据交给它 | 关闭该实例并从 `/Applications/Nomi.app` 打开平时使用的 Nomi；除非你明确要新建独立配置，否则不要重新录入或删除原钥匙 |
+| `旧配置缺少客户端身份凭据` | 升级前配置只有 stdio 开关，没有本机客户端签名 | 在 iPix 接入卡对该客户端点「重新接入」 |
+| `untrusted-host` | 当前客户端没有有效签名，或尚未在 iPix 设置中获准发起草稿 | 重新接入对应客户端，再到「自动化与权限」开启该客户端 |
+| `找不到 iPix 的钥匙串` | 当前启动的是另一份应用身份、隔离测试配置或搬动后的 app，系统钥匙串不会把原凭据交给它 | 关闭该实例并从 `/Applications/iPix.app` 打开平时使用的 iPix；除非你明确要新建独立配置，否则不要重新录入或删除原钥匙 |
 
 ---
 

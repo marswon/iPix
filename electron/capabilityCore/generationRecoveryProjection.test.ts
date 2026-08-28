@@ -7,7 +7,7 @@ describe('projectGenerationRecovery', () => {
       state: 'submission_unknown',
       profile: 'observe_only',
       title: '可能已经提交',
-      message: '供应商任务 task-1 可能已经接受；Nomi 可以继续查询，不会自动重提。',
+      message: '供应商任务 task-1 可能已经接受；iPix 可以继续查询，不会自动重提。',
       nextAction: 'reconcile',
       allowAutomaticRetry: false,
       allowNewAttempt: true,

@@ -146,7 +146,7 @@ describe('production run MCP tools', () => {
       arguments: {
         projectId: 'project-1',
         playbook: 'brand.promo',
-        brief: { goal: '介绍 Nomi', durationSeconds: 60, sellingPoints: ['本地保存'] },
+        brief: { goal: '介绍 iPix', durationSeconds: 60, sellingPoints: ['本地保存'] },
       },
     })
     expect(harness.invoke).toHaveBeenCalledWith('production.start', {
@@ -154,7 +154,7 @@ describe('production run MCP tools', () => {
       playbook: 'brand.promo',
       playbookVersion: undefined,
       actorId: 'codex',
-      brief: { goal: '介绍 Nomi', durationSeconds: 60, sellingPoints: ['本地保存'] },
+      brief: { goal: '介绍 iPix', durationSeconds: 60, sellingPoints: ['本地保存'] },
     })
     const result = response.result as { content: Array<{ text: string }> }
     expect(result.content[0].text).toContain('草稿')
@@ -204,7 +204,7 @@ describe('production run MCP tools', () => {
     const result = response.result as { content: Array<{ text: string }> }
     expect(result.content[0].text).toContain('storyboard')
     expect(result.content[0].text).toContain('nomi://project/project-1/run/run-1/artifact/artifact-1')
-    expect(result.content[0].text).toContain('在 Nomi 打开')
+    expect(result.content[0].text).toContain('在 iPix 打开')
     expect(JSON.stringify(result)).not.toMatch(/providerUrl|\/Users\/|rawPrompt|approval/i)
   })
 })

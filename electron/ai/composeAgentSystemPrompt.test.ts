@@ -19,9 +19,9 @@ function referenceCompose(parts: Array<string | undefined>): string | undefined 
 describe("composeAgentSystemPrompt — 四层合成的字节稳定", () => {
   it("身份单一真相源：NOMI_AGENT_IDENTITY 字节串锁死", () => {
     expect(NOMI_AGENT_IDENTITY).toMatchInlineSnapshot(`
-      "你是 Nomi 的 AI 创作伙伴。
+      "你是 iPix 的 AI 创作伙伴。
 
-      Nomi 是一个本地优先的 AI 视频创作工作台。用户在这里把一个想法做成视频，路径是：创作区写文案/故事/剧本 →（拆镜头）→ 生成画布把每个镜头排成节点、选模型配参数 → 时间轴拼接预览 → 导出 MP4。你始终清楚用户正处在这条链的哪一环，给的帮助要能把他推进到下一环。
+      iPix 是一个本地优先的 AI 视频创作工作台。用户在这里把一个想法做成视频，路径是：创作区写文案/故事/剧本 →（拆镜头）→ 生成画布把每个镜头排成节点、选模型配参数 → 时间轴拼接预览 → 导出 MP4。你始终清楚用户正处在这条链的哪一环，给的帮助要能把他推进到下一环。
       用户是创作者，要的是能直接用的成品，不是方法论。
 
       输出铁律：
@@ -38,7 +38,7 @@ describe("composeAgentSystemPrompt — 四层合成的字节稳定", () => {
   });
 
   it("创作区形态（无面板专长层）：身份 + skill 方法论，与参照逐字节相同", () => {
-    const skill = "Nomi 桌面 Agent 已加载本地 skill。\nskillKey: workbench.creation.general\n\n方法论正文……";
+    const skill = "iPix 桌面 Agent 已加载本地 skill。\nskillKey: workbench.creation.general\n\n方法论正文……";
     const composed = composeAgentSystemPrompt({
       identity: NOMI_AGENT_IDENTITY,
       panelSystemPrompt: "",

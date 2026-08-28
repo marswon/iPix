@@ -1,5 +1,5 @@
 // A5 系统通知 · 纯决策层（plan 2026-08-11-mcp-conversation-native-p0）。
-// 「Nomi 在后台时，等审批 / 失败 / 提交结果不明 / 完成 能被看见」——四类才打扰，其余一律不吵（样张陆幕）。
+// 「iPix 在后台时，等审批 / 失败 / 提交结果不明 / 完成 能被看见」——四类才打扰，其余一律不吵（样张陆幕）。
 // 本文件零 electron 依赖（可裸 node 单测）；发通知与聚焦在 productionNotificationsDesktop.ts。
 
 import type { ProductionRun, RunEvent } from './productionRunTypes'
@@ -18,20 +18,20 @@ type NoticeLocale = 'zh-CN' | 'en'
 
 const COPY: Record<string, { zh: [string, string]; en: [string, string] }> = {
   attention: {
-    zh: ['Nomi · 制作需要处理', '有任务卡住了，点击查看失败原因与恢复动作'],
-    en: ['Nomi · Production needs attention', 'A job is stuck. Click to see the cause and recovery actions'],
+    zh: ['iPix · 制作需要处理', '有任务卡住了，点击查看失败原因与恢复动作'],
+    en: ['iPix · Production needs attention', 'A job is stuck. Click to see the cause and recovery actions'],
   },
   submission_unknown: {
-    zh: ['Nomi · 提交结果不明', '需要你对账供应商任务，避免重复扣费'],
-    en: ['Nomi · Submission unknown', 'Reconcile the provider task to avoid double charges'],
+    zh: ['iPix · 提交结果不明', '需要你对账供应商任务，避免重复扣费'],
+    en: ['iPix · Submission unknown', 'Reconcile the provider task to avoid double charges'],
   },
   gate: {
-    zh: ['Nomi · 等你确认', '制作在门前停着，点击查看并决定'],
-    en: ['Nomi · Waiting for your approval', 'Production is paused at a gate. Click to review and decide'],
+    zh: ['iPix · 等你确认', '制作在门前停着，点击查看并决定'],
+    en: ['iPix · Waiting for your approval', 'Production is paused at a gate. Click to review and decide'],
   },
   completed: {
-    zh: ['Nomi · 制作完成', '成片与素材已保存到项目，点击查看'],
-    en: ['Nomi · Production complete', 'The final cut and assets are saved. Click to open'],
+    zh: ['iPix · 制作完成', '成片与素材已保存到项目，点击查看'],
+    en: ['iPix · Production complete', 'The final cut and assets are saved. Click to open'],
   },
 }
 

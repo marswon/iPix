@@ -77,7 +77,7 @@
     "eval:generate-quality": "node ./scripts/eval-review-images.mjs",
     "eval:journey": "node ./scripts/eval-journey.mjs",
     "dist": "electron-builder",
-    "dist:mac:dir": "electron-builder --mac dir --arm64 && node tests/ux/packaged-mcp-smoke.e2e.mjs release/mac-arm64/Nomi.app",
+    "dist:mac:dir": "electron-builder --mac dir --arm64 && node tests/ux/packaged-mcp-smoke.e2e.mjs release/mac-arm64/iPix.app",
     "postinstall": "node ./scripts/install-git-hooks.cjs",
     "test:e2e": "node tests/ux/smoke.e2e.mjs",
     "test:mcp": "node tests/ux/mcp-journey.e2e.mjs",
@@ -190,7 +190,7 @@
   },
   "build": {
     "appId": "com.nomi.app",
-    "productName": "Nomi",
+    "productName": "iPix",
     "npmRebuild": false,
     "directories": {
       "output": "release"
@@ -239,7 +239,7 @@
           ]
         }
       ],
-      "icon": "build/icon.png",
+      "icon": "build/icon.icns",
       "identity": null
     },
     "win": {

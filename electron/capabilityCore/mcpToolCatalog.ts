@@ -1,4 +1,4 @@
-// 能力核 · MCP 工具契约目录（单一职责：把 Nomi 能力核暴露成哪些 MCP 工具、各自的 name/description/
+// 能力核 · MCP 工具契约目录（单一职责：把 iPix 能力核暴露成哪些 MCP 工具、各自的 name/description/
 // inputSchema(JSON Schema)/method(能力核方法)/build(args→params)）。从 mcpProtocol.ts 抽出（壳到 800/800，
 // 交付前预批的 headroom 提取）——协议握手/派发/确认逻辑留在 mcpProtocol.ts，工具"长什么样"这份数据契约独立成文件。
 // 消费方（mcpProtocol：tools/list 广播、按 name 派发、只读标注）从本模块 import；测试直接测这份契约。
@@ -14,7 +14,7 @@ export const MCP_TOOL_CATALOG = [
   ...MCP_GENERATION_TOOL_CATALOG,
   {
     name: 'nomi_list_projects',
-    description: '列出本机 Nomi 的所有项目（id / 名称 / 更新时间）。',
+    description: '列出本机 iPix 的所有项目（id / 名称 / 更新时间）。',
     // 无参工具的官方推荐形态（tools spec 2026-07-28）：显式只收空对象，模型幻觉出的参数早拒。
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     method: 'project.list',
@@ -22,7 +22,7 @@ export const MCP_TOOL_CATALOG = [
   },
   {
     name: 'nomi_create_project',
-    description: '新建一个空白 Nomi 项目，返回项目 id。',
+    description: '新建一个空白 iPix 项目，返回项目 id。',
     inputSchema: { type: 'object', properties: { name: { type: 'string', description: '项目名（可选）' } } },
     method: 'project.create',
     build: (a: Record<string, unknown>) => (a.name ? { name: a.name } : {}),
@@ -30,9 +30,9 @@ export const MCP_TOOL_CATALOG = [
   {
     name: 'nomi_list_models',
     description:
-      '列出 Nomi 已启用的生成模型（vendor / modelKey / 能力 kind / 名称），用于选型。每条带真话字段，不只列名：'
+      '列出 iPix 已启用的生成模型（vendor / modelKey / 能力 kind / 名称），用于选型。每条带真话字段，不只列名：'
       + 'keyStatus=ok/missing/locked——**只有 keyStatus=ok 才真能用**；missing=没配 API Key（调用它只会浪费一趟往返报缺 key），'
-      + 'locked=Key 在但当前宿主身份解不开（让用户去 Nomi 应用重存该 Key）；statusReason 给一句人话缺口。'
+      + 'locked=Key 在但当前宿主身份解不开（让用户去 iPix 应用重存该 Key）；statusReason 给一句人话缺口。'
       + 'references 说这个模型带不带得动参考：{image,video,audio,multiImage,referenceModes}——带参考图/视频前先看它，'
       + 'referenceModes 指出用哪个模式（如 image_to_video）才发得出，multiImage=能否多张参考图。选型只挑 keyStatus=ok 的。',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
@@ -118,11 +118,11 @@ export const MCP_TOOL_CATALOG = [
   },
   {
     name: 'nomi_start_playbook',
-    description: '在本地 Nomi 项目中创建一个可审阅的制作草稿。只记录 brief 与 playbook，不批准预算、不调用付费模型。',
+    description: '在本地 iPix 项目中创建一个可审阅的制作草稿。只记录 brief 与 playbook，不批准预算、不调用付费模型。',
     inputSchema: {
       type: 'object',
       properties: {
-        projectId: { type: 'string', description: '目标 Nomi 项目 id' },
+        projectId: { type: 'string', description: '目标 iPix 项目 id' },
         // 只列真跑得动的（从注册表 derive，见 productionPlaybooks.ts）。不写「例如 xxx」——那会
         // 暗示还有别的名字可传，实际传别的会被当场拒（原先是静默建一个永远推不动的坏 Run）。
         playbook: {
@@ -199,7 +199,7 @@ export const MCP_TOOL_CATALOG = [
   },
   {
     name: 'nomi_get_artifact',
-    description: '读取 Run 内一个产物的安全元数据、受控预览能力与 Nomi 深链；不返回绝对路径或供应商地址。',
+    description: '读取 Run 内一个产物的安全元数据、受控预览能力与 iPix 深链；不返回绝对路径或供应商地址。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -219,7 +219,7 @@ export const MCP_TOOL_CATALOG = [
   },
   {
     name: 'nomi_read_artifact',
-    description: '读取一个版本化剧本、分镜或制作产物的完整安全内容、版本号、内容 hash、来源和 Nomi 深链；不返回绝对路径、密钥或供应商私有地址。',
+    description: '读取一个版本化剧本、分镜或制作产物的完整安全内容、版本号、内容 hash、来源和 iPix 深链；不返回绝对路径、密钥或供应商私有地址。',
     inputSchema: {
       type: 'object',
       properties: { projectId: { type: 'string' }, runId: { type: 'string' }, artifactId: { type: 'string' } },
@@ -289,9 +289,9 @@ export const MCP_TOOL_CATALOG = [
   {
     name: 'nomi_materialize_storyboard',
     description:
-      '把已批准且仍对应当前剧本的分镜一次性落到目标 Nomi 项目画布，并登记同一批 Production jobs/预算合同。'
+      '把已批准且仍对应当前剧本的分镜一次性落到目标 iPix 项目画布，并登记同一批 Production jobs/预算合同。'
       + '只接受你刚读到的 artifact 版本；不会批准剧本/分镜、不会批准预算，也不会直接调用付费模型。'
-      + '落地成功后返回画布节点 id、制作 Run 状态和可在 Nomi 打开的深链。',
+      + '落地成功后返回画布节点 id、制作 Run 状态和可在 iPix 打开的深链。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -333,7 +333,7 @@ export const MCP_TOOL_CATALOG = [
       '对制作 Run 的可逆创意门表态：approved 批准 / rejected 否决。方向门（gate-direction-*）可带 choiceKey 指定候选。'
       + '多镜批的定妆照检查点（gate-anchor-checkpoint-*）也在此表态——决定前先把定妆照给真人过目'
       + '（nomi_get_run 取该门 jobIds，对应 artifacts 用 nomi_get_artifact 逐张预览）；批准即在已批预算内开拍剩余镜头，不新增授权。'
-      + 'Nomi 会在服务端再次向真人发起确认；预算、逐镜头付费、导出和发布必须回 Nomi 决定，不能用本工具跳过。',
+      + 'iPix 会在服务端再次向真人发起确认；预算、逐镜头付费、导出和发布必须回 iPix 决定，不能用本工具跳过。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -390,7 +390,7 @@ export const MCP_TOOL_CATALOG = [
   {
     name: 'nomi_generate',
     description:
-      '触发一次生成（用 Nomi 的 archetype 正确组装参数 + 落资产回节点）。会花用户额度。intent=image/video/text/audio。'
+      '触发一次生成（用 iPix 的 archetype 正确组装参数 + 落资产回节点）。会花用户额度。intent=image/video/text/audio。'
       + '画幅/时长要显式传 aspect_ratio/resolution/duration——**写进 prompt 里模型收不到**（真机实测：写"16:9"进提示词仍出方图，'
       + '因为渠道有默认 1:1 会盖过）。这三个参数会以调用方优先合并进真实请求（caller-wins），不传则用该模型默认。',
     inputSchema: {

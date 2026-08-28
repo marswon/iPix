@@ -8,16 +8,16 @@
 
 | 系统 | 适用机型 | 下载 |
 |------|---------|------|
-| 🍎 macOS | Apple Silicon（M1/M2/M3/M4） | Nomi-mac-arm64.dmg |
-| 🍎 macOS | Intel 芯片 | Nomi-mac-intel.dmg |
-| 🪟 Windows | Win 10 / 11 | Nomi-windows-setup.exe |
+| 🍎 macOS | Apple Silicon（M1/M2/M3/M4） | iPix-mac-arm64.dmg |
+| 🍎 macOS | Intel 芯片 | iPix-mac-intel.dmg |
+| 🪟 Windows | Win 10 / 11 | iPix-windows-setup.exe |
 
 无需 Docker，无需数据库，无需命令行。项目文件全部保存在本地 `文档/Nomi Projects` 目录。
 
 ### macOS 首次打开提示「已损坏」？
 
 ```bash
-xattr -cr /Applications/Nomi.app
+xattr -cr /Applications/iPix.app
 ```
 
 然后再双击打开即可。

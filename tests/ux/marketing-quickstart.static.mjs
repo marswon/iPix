@@ -62,12 +62,12 @@ async function auditViewport(browser, name, viewport) {
     return { title: document.title, overflow, headings, links, images, blankImages, missingAlt }
   })
 
-  assert(result.title.includes('Nomi 新手指南'), `${name}: title 正确`)
+  assert(result.title.includes('iPix 新手指南'), `${name}: title 正确`)
   assert(result.overflow <= 1, `${name}: 无横向溢出`)
-  assert(result.headings.includes('第一次打开 Nomi，就这样做。'), `${name}: hero H1 可见`)
+  assert(result.headings.includes('第一次打开 iPix，就这样做。'), `${name}: hero H1 可见`)
   assert(result.headings.some((h) => h.includes('Image-to-Video')), `${name}: Image-to-Video 章节可见`)
-  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-mac-arm64.dmg'), `${name}: Mac arm64 下载链接在位`)
-  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/Nomi-windows-setup.exe'), `${name}: Windows 下载链接在位`)
+  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg'), `${name}: Mac arm64 下载链接在位`)
+  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe'), `${name}: Windows 下载链接在位`)
   assert(result.images.length >= 5, `${name}: 示意图资源已嵌入`)
   assert(result.blankImages.length === 0, `${name}: 图片非空渲染`)
   assert(result.missingAlt.length === 0, `${name}: 图片 alt 完整`)

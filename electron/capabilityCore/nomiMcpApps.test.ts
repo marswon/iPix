@@ -124,7 +124,7 @@ describe('nomi-mcp · MCP Apps 活生成 widget serving', () => {
     expect(ui?.mimeType).toBe('text/html;profile=mcp-app')
   })
 
-  it('resources/read ui:// → 回自包含 widget HTML（含握手 + Nomi 标识）', async () => {
+  it('resources/read ui:// → 回自包含 widget HTML（含握手 + iPix 标识）', async () => {
     h = new AppsHarness()
     await h.initUi()
     const res = await h.call(2, 'resources/read', { uri: NOMI_LIVE_DRAFT_UI_URI })
@@ -136,7 +136,7 @@ describe('nomi-mcp · MCP Apps 活生成 widget serving', () => {
     expect(contents[0].text).toContain('ui/initialize') // 视图↔宿主握手
     expect(contents[0].text).toContain('window.openai') // ChatGPT 桥（双桥并存）
     expect(contents[0].text).toContain('openai:set_globals') // ChatGPT 数据更新事件
-    expect(contents[0].text).toContain('Nomi 活生成')
+    expect(contents[0].text).toContain('iPix 活生成')
   })
 
   it('声明 UI 扩展的宿主：nomi_generate 结果带 structuredContent.nomiDraft + _meta.ui', async () => {
@@ -268,7 +268,7 @@ describe('safePreviewUrl 接受签名 asset 预览（交付④ · 形状与 prod
 })
 
 describe('buildNomiRunFromProjection（纯函数）', () => {
-  it('只把安全 nomi-local 预览和 Nomi 深链带入 widget', () => {
+  it('只把安全 nomi-local 预览和 iPix 深链带入 widget', () => {
     const run = buildNomiRunFromProjection({
       projectId: 'project-1',
       runId: 'run-1',
@@ -286,11 +286,11 @@ describe('buildNomiRunFromProjection（纯函数）', () => {
     expect(run.deepLink).toBe('nomi://project/project-1/run/run-1')
   })
 
-  it('production widget consumes the canonical nomiRun frame and exposes one exact Nomi action', () => {
+  it('production widget consumes the canonical nomiRun frame and exposes one exact iPix action', () => {
     expect(NOMI_LIVE_DRAFT_WIDGET_HTML).toContain('sc.nomiRun')
     expect(NOMI_LIVE_DRAFT_WIDGET_HTML).toContain('structuredContent.nomiRun')
-    expect(NOMI_LIVE_DRAFT_WIDGET_HTML.match(/>在 Nomi 打开</g)).toHaveLength(1)
-    expect(NOMI_LIVE_DRAFT_WIDGET_HTML).not.toContain('>在 Nomi 中打开<')
+    expect(NOMI_LIVE_DRAFT_WIDGET_HTML.match(/>在 iPix 打开</g)).toHaveLength(1)
+    expect(NOMI_LIVE_DRAFT_WIDGET_HTML).not.toContain('>在 iPix 中打开<')
   })
 
   it('selects only the newest safe preview instead of rendering every artifact', () => {

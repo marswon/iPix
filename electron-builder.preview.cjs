@@ -7,10 +7,10 @@ delete sharedBuild.publish;
 module.exports = {
   ...sharedBuild,
   appId: "com.nomi.app.preview",
-  productName: "Nomi Preview",
+  productName: "iPix Preview",
   directories: {
     ...sharedBuild.directories,
     output: "release-preview",
   },
-  artifactName: "${productName}-${os}-${arch}.${ext}",
+  artifactName: "iPix.Preview-${os}-${arch}.${ext}",
 };

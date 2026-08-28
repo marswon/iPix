@@ -6,7 +6,7 @@ import {
 } from "../catalog/catalogStore";
 import { decryptApiKeyRecord } from "../catalog/secrets";
 import { resolveCredentialScopedVendorKey } from "../catalog/credentialScopedVendor";
-import { NEWAPI_IMAGE_CREATE_OP } from "../catalog/newapiTransport";
+import { getTokenQwenOperation, verifiedGetTokenQwenModes } from "../catalog/gettokenQwenImage";
 import type { BillingModelKind, Mapping, Model, ProfileKind, Vendor } from "../catalog/types";
 import { humanizeModelKey } from "../catalog/modelLabel";
 import { adapterModelMetadataForPromotion } from "./promotionMeta";
@@ -41,16 +41,6 @@ export type ProviderAdapterCatalogPort = {
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
-}
-
-function isVerifiedGetTokenImageModel(baseUrl: string, modelKey: string): boolean {
-  try {
-    const endpoint = new URL(baseUrl);
-    return endpoint.protocol === "https:" && endpoint.hostname === "www.gettoken.net" &&
-      modelKey.trim().toLowerCase() === "qwen-image-2.0";
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -133,13 +123,14 @@ export const defaultCatalog: ProviderAdapterCatalogPort = {
         );
         const oldAdapter = asRecord(asRecord(existing?.meta).adapter);
         const hasActiveRevision = typeof oldAdapter.activeRevision === "string" && oldAdapter.activeRevision.trim();
-        const verifiedGetTokenImage = selected.kind === "image" &&
-          isVerifiedGetTokenImageModel(input.baseUrl, selected.modelKey);
+        const verifiedGetTokenModes = selected.kind === "image"
+          ? verifiedGetTokenQwenModes(input.baseUrl, selected.modelKey)
+          : null;
         const hasPersistedContract = Boolean(
           hasActiveRevision ||
           hasExecutableCustomCall(existing) ||
           hasExecutableMapping(before.mappings, input.vendorKey, selected.modelKey, selected.kind) ||
-          verifiedGetTokenImage,
+          verifiedGetTokenModes,
         );
         const canExecute = selected.kind === "text" || hasPersistedContract;
         const preserveAdapter = Boolean(existing && canExecute && Object.keys(oldAdapter).length > 0);
@@ -150,30 +141,38 @@ export const defaultCatalog: ProviderAdapterCatalogPort = {
           modelAlias: existing?.modelAlias || selected.modelKey,
           labelZh: selected.labelZh || existing?.labelZh || humanizeModelKey(selected.modelKey),
           kind: selected.kind,
-          enabled: verifiedGetTokenImage ? true : existing ? existing.enabled && canExecute : canExecute,
+          enabled: verifiedGetTokenModes ? true : existing ? existing.enabled && canExecute : canExecute,
           onboarding: existing?.onboarding || { addedVia: "manual", addedAt: input.savedAt, fields: [] },
           meta: {
             ...asRecord(existing?.meta),
-            adapter: preserveAdapter
-              ? oldAdapter
-              : verifiedGetTokenImage
-                ? {
+            ...(verifiedGetTokenModes?.includes("image_edit")
+              ? { imageOptions: { ...asRecord(asRecord(existing?.meta).imageOptions), supportsReferenceImages: true } }
+              : {}),
+            adapter: verifiedGetTokenModes
+              ? {
+                  state: "verified",
+                  activeRevision: "catalog:gettoken-qwen-images:v2",
+                  modes: verifiedGetTokenModes.map((taskKind) => ({
+                    taskKind,
                     state: "verified",
-                    activeRevision: "catalog:gettoken-images:v1",
-                    modes: [{ taskKind: "text_to_image", state: "verified", attempts: 1, verifiedAt: input.savedAt }],
-                    updatedAt: input.savedAt,
-                  }
+                    attempts: 1,
+                    verifiedAt: input.savedAt,
+                  })),
+                  updatedAt: input.savedAt,
+                }
+              : preserveAdapter
+                ? oldAdapter
                 : { state: "unverified", modes: [], updatedAt: input.savedAt },
           },
         });
-        if (verifiedGetTokenImage) {
+        for (const taskKind of verifiedGetTokenModes || []) {
           tx.upsertMapping({
             vendorKey: input.vendorKey,
             modelKey: selected.modelKey,
-            taskKind: "text_to_image",
-            name: `${committed.labelZh} · 文生图`,
+            taskKind,
+            name: `${committed.labelZh} · ${taskKind === "image_edit" ? "参考图改图" : "文生图"}`,
             enabled: true,
-            create: NEWAPI_IMAGE_CREATE_OP,
+            create: getTokenQwenOperation(taskKind),
           });
         }
         return committed;

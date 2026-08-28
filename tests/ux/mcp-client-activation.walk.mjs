@@ -1,9 +1,9 @@
 // R13/R16 installed-app journey for truthful MCP client activation.
 //
 // Default: isolated HOME/settings/projects, safe to rerun.
-// Build selection: `--app-path=/path/to/Nomi.app` or `--app-path=/path/to/electron`.
+// Build selection: `--app-path=/path/to/iPix.app` or `--app-path=/path/to/electron`.
 // Real upgrade: `node tests/ux/mcp-client-activation.walk.mjs --real-connect`
-// reconnects stale `nomi` entries through Nomi's UI, verifies current entries in place, and enables Cursor in Nomi.
+// reconnects stale `nomi` entries through iPix's UI, verifies current entries in place, and enables Cursor in iPix.
 import { launchNomiApp } from './_launchApp.mjs'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -18,8 +18,8 @@ if (helpRequested) {
   console.log(`Usage: node tests/ux/mcp-client-activation.walk.mjs [options]
 
 Options:
-  --app-path=<path>  Nomi.app bundle or Electron/Nomi executable (default: /Applications/Nomi.app)
-  --cdp-url=<url>    Attach to a Nomi instance opened by macOS instead of launching it directly
+  --app-path=<path>  iPix.app bundle or Electron/iPix executable (default: /Applications/iPix.app)
+  --cdp-url=<url>    Attach to an iPix instance opened by macOS instead of launching it directly
   --real-connect     Use and update the real HOME, settings, projects, and MCP client configs
   -h, --help         Show this help`)
   process.exit(0)
@@ -27,13 +27,14 @@ Options:
 
 const appPathArg = process.argv.find((arg) => arg.startsWith('--app-path='))?.slice('--app-path='.length)
 const cdpUrl = process.argv.find((arg) => arg.startsWith('--cdp-url='))?.slice('--cdp-url='.length) || null
-const appPath = appPathArg || process.env.NOMI_APP_PATH || '/Applications/Nomi.app'
-const executablePath = appPath.endsWith('.app') ? path.join(appPath, 'Contents', 'MacOS', 'Nomi') : appPath
+const appPath = appPathArg || process.env.NOMI_APP_PATH || '/Applications/iPix.app'
+const productName = appPath.endsWith('.app') ? path.basename(appPath, '.app') : ''
+const executablePath = productName ? path.join(appPath, 'Contents', 'MacOS', productName) : appPath
 const realConnect = process.argv.includes('--real-connect')
 const shotsDir = path.join(repoRoot, 'tests', 'ux', 'shots', 'mcp-client-activation')
 fs.mkdirSync(shotsDir, { recursive: true })
 
-if (!fs.existsSync(executablePath)) throw new Error(`Installed Nomi executable not found: ${executablePath}`)
+if (!fs.existsSync(executablePath)) throw new Error(`Installed iPix executable not found: ${executablePath}`)
 
 const tempRoot = realConnect ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'nomi-mcp-activation-walk-'))
 const testHome = tempRoot ? path.join(tempRoot, 'home') : os.homedir()

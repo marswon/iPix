@@ -19,7 +19,7 @@ export const zhAntigravity = {
     unverified: '选择模型与能力试跑，通过后再启用。发现模型不等于已经验证。',
     ready: '本次试跑通过。其他模型和能力的状态保持独立；启用后才进入生成入口。',
     limited: '本次检测或试跑受限。保留其他验证记录，不自动重试或切换付费 API。',
-    error: '本次检测或试跑未通过。可查看详情，检查登录和 Nomi 网络设置后重试。',
+    error: '本次检测或试跑未通过。可查看详情，检查登录和 iPix 网络设置后重试。',
   },
   checking: '正在检测 CLI 与模型清单…',
   testing: '正在试跑「{{capability}}」· {{model}}',
@@ -51,9 +51,9 @@ export const zhAntigravity = {
   capabilityErrorCode: '所选能力状态代码',
   checkedAt: '所选能力验证时间',
   noAudioVideo: '视频与音频：尚无通过验证的 CLI 生成通道，不显示可用入口。',
-  limits: '仅使用本机登录状态。Nomi 不读取或复制 Google 登录 token；此连接用于画布生成，不作为能操作项目的创作助手。',
-  network: '使用 Nomi 全局网络设置；CLI 会加载用户自己的全局配置。',
-  issues: { unavailable: '当前桌面版本不支持此连接，请更新 Nomi。', requestFailed: '请求未完成，请重新检测或试跑。', cancelled: '本次试跑已取消，未记录成功。', alreadyFinished: '试跑已在取消前完成，保留实际验证结果；未自动启用模型。', cancelFailed: '取消未确认，请等待任务结束后重新检测。', saveFailed: '保存失败。请重新试跑后再启用；已有设置未自动重试。' },
+  limits: '仅使用本机登录状态。iPix 不读取或复制 Google 登录 token；此连接用于画布生成，不作为能操作项目的创作助手。',
+  network: '使用 iPix 全局网络设置；CLI 会加载用户自己的全局配置。',
+  issues: { unavailable: '当前桌面版本不支持此连接，请更新 iPix。', requestFailed: '请求未完成，请重新检测或试跑。', cancelled: '本次试跑已取消，未记录成功。', alreadyFinished: '试跑已在取消前完成，保留实际验证结果；未自动启用模型。', cancelFailed: '取消未确认，请等待任务结束后重新检测。', saveFailed: '保存失败。请重新试跑后再启用；已有设置未自动重试。' },
 } as const
 
 export const enAntigravity = {
@@ -77,7 +77,7 @@ export const enAntigravity = {
     unverified: 'Choose a model and capability to test, then enable it. Discovery is not verification.',
     ready: 'This test passed. Other models and capabilities keep their own status. Enable to use in generation.',
     limited: 'This check or test is restricted. Other verification records remain; no automatic retry or paid API fallback.',
-    error: 'This check or test failed. Review details, sign-in and Nomi network settings before retrying.',
+    error: 'This check or test failed. Review details, sign-in and iPix network settings before retrying.',
   },
   checking: 'Checking CLI and model list…',
   testing: 'Testing {{capability}} · {{model}}',
@@ -109,7 +109,7 @@ export const enAntigravity = {
   capabilityErrorCode: 'Selected capability status code',
   checkedAt: 'Selected capability last checked',
   noAudioVideo: 'Video and audio: no verified CLI generation route; no usable entry is advertised.',
-  limits: 'Uses local sign-in only. Nomi does not read or copy Google login tokens. This connection serves canvas generation, not the creative assistant that operates on projects.',
-  network: 'Uses Nomi network settings. The CLI also loads your global configuration.',
-  issues: { unavailable: 'This desktop version does not support the connection. Update Nomi.', requestFailed: 'The request did not finish. Check or test again.', cancelled: 'The test was cancelled; no success was recorded.', alreadyFinished: 'The test finished before cancellation. Its actual result was kept; the model was not enabled automatically.', cancelFailed: 'Cancellation was not confirmed. Wait for the task to finish before checking again.', saveFailed: 'Could not save. Retest before enabling. Existing settings were not retried automatically.' },
+  limits: 'Uses local sign-in only. iPix does not read or copy Google login tokens. This connection serves canvas generation, not the creative assistant that operates on projects.',
+  network: 'Uses iPix network settings. The CLI also loads your global configuration.',
+  issues: { unavailable: 'This desktop version does not support the connection. Update iPix.', requestFailed: 'The request did not finish. Check or test again.', cancelled: 'The test was cancelled; no success was recorded.', alreadyFinished: 'The test finished before cancellation. Its actual result was kept; the model was not enabled automatically.', cancelFailed: 'Cancellation was not confirmed. Wait for the task to finish before checking again.', saveFailed: 'Could not save. Retest before enabling. Existing settings were not retried automatically.' },
 } as const

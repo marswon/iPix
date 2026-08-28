@@ -24,8 +24,8 @@ const makeRoot = () => {
   return root
 }
 
-const MAC_ASSETS = ['Nomi-mac-arm64.dmg', 'Nomi-mac-x64.dmg', 'Nomi-mac-arm64.zip', 'Nomi-mac-x64.zip']
-const WINDOWS_ASSETS = ['Nomi-win-x64.exe']
+const MAC_ASSETS = ['iPix-mac-arm64.dmg', 'iPix-mac-x64.dmg', 'iPix-mac-arm64.zip', 'iPix-mac-x64.zip']
+const WINDOWS_ASSETS = ['iPix-win-x64.exe']
 const RELEASE_ASSETS = [...MAC_ASSETS, ...WINDOWS_ASSETS]
 
 function digest(filePath) {
@@ -71,8 +71,8 @@ function makeReleaseFixture() {
     writeAsset(input, name)
     writeBlockmap(input, name)
   }
-  writeMetadata(input, 'latest-mac.yml', metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip'))
-  writeMetadata(input, 'latest.yml', metadataDocument(input, WINDOWS_ASSETS, 'Nomi-win-x64.exe'))
+  writeMetadata(input, 'latest-mac.yml', metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip'))
+  writeMetadata(input, 'latest.yml', metadataDocument(input, WINDOWS_ASSETS, 'iPix-win-x64.exe'))
   return { root, input, output }
 }
 
@@ -258,10 +258,10 @@ describe('release contract', () => {
     writeAsset(input, 'unexpected.zip')
     expect(validate).toThrow(/artifact set mismatch/)
     fs.rmSync(path.join(input, 'unexpected.zip'))
-    fs.rmSync(path.join(input, 'Nomi-win-x64.exe.blockmap'))
+    fs.rmSync(path.join(input, 'iPix-win-x64.exe.blockmap'))
     expect(validate).toThrow(/artifact set mismatch/)
-    writeBlockmap(input, 'Nomi-win-x64.exe')
-    fs.appendFileSync(path.join(input, 'Nomi-win-x64.exe'), 'tampered')
+    writeBlockmap(input, 'iPix-win-x64.exe')
+    fs.appendFileSync(path.join(input, 'iPix-win-x64.exe'), 'tampered')
     expect(validate).toThrow(/size mismatch|sha256 mismatch/)
   })
 
@@ -270,9 +270,9 @@ describe('release contract', () => {
 
     prepareReleaseAssets(input, output, '0.20.0')
 
-    expect(fs.readFileSync(path.join(output, 'Nomi-mac-intel.dmg'), 'utf8')).toBe('release asset: Nomi-mac-x64.dmg')
-    expect(fs.readFileSync(path.join(output, 'Nomi-windows-setup.exe'), 'utf8')).toBe('release asset: Nomi-win-x64.exe')
-    expect(fs.readFileSync(path.join(output, 'SHA256SUMS.txt'), 'utf8')).toContain('Nomi-mac-arm64.dmg')
+    expect(fs.readFileSync(path.join(output, 'iPix-mac-intel.dmg'), 'utf8')).toBe('release asset: iPix-mac-x64.dmg')
+    expect(fs.readFileSync(path.join(output, 'iPix-windows-setup.exe'), 'utf8')).toBe('release asset: iPix-win-x64.exe')
+    expect(fs.readFileSync(path.join(output, 'SHA256SUMS.txt'), 'utf8')).toContain('iPix-mac-arm64.dmg')
   })
 
   it('rejects malformed updater YAML', () => {
@@ -283,21 +283,21 @@ describe('release contract', () => {
 
   it('requires every blockmap and rejects malformed blockmap data', () => {
     const missing = makeReleaseFixture()
-    fs.rmSync(path.join(missing.input, 'Nomi-mac-x64.zip.blockmap'))
+    fs.rmSync(path.join(missing.input, 'iPix-mac-x64.zip.blockmap'))
     expect(() => prepareReleaseAssets(missing.input, missing.output, '0.20.0')).toThrow(
-      /Required release asset is missing: Nomi-mac-x64\.zip\.blockmap/,
+      /Required release asset is missing: iPix-mac-x64\.zip\.blockmap/,
     )
 
     const malformed = makeReleaseFixture()
-    fs.writeFileSync(path.join(malformed.input, 'Nomi-win-x64.exe.blockmap'), 'not gzip')
+    fs.writeFileSync(path.join(malformed.input, 'iPix-win-x64.exe.blockmap'), 'not gzip')
     expect(() => prepareReleaseAssets(malformed.input, malformed.output, '0.20.0')).toThrow(
-      /Invalid release blockmap Nomi-win-x64\.exe\.blockmap/,
+      /Invalid release blockmap iPix-win-x64\.exe\.blockmap/,
     )
   })
 
   it('rejects stale updater versions', () => {
     const { input, output } = makeReleaseFixture()
-    writeMetadata(input, 'latest.yml', metadataDocument(input, WINDOWS_ASSETS, 'Nomi-win-x64.exe', '0.19.0'))
+    writeMetadata(input, 'latest.yml', metadataDocument(input, WINDOWS_ASSETS, 'iPix-win-x64.exe', '0.19.0'))
     expect(() => prepareReleaseAssets(input, output, '0.20.0')).toThrow(
       /latest\.yml version.*does not match release 0\.20\.0/,
     )
@@ -305,15 +305,15 @@ describe('release contract', () => {
 
   it('rejects metadata that references a missing release asset', () => {
     const { input, output } = makeReleaseFixture()
-    const document = metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip')
-    document.files[0].url = 'Nomi-mac-arm64-missing.dmg'
+    const document = metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip')
+    document.files[0].url = 'iPix-mac-arm64-missing.dmg'
     writeMetadata(input, 'latest-mac.yml', document)
     expect(() => prepareReleaseAssets(input, output, '0.20.0')).toThrow(/references missing release asset/)
   })
 
   it('rejects stale updater sizes', () => {
     const { input, output } = makeReleaseFixture()
-    const document = metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip')
+    const document = metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip')
     document.files[0].size += 1
     writeMetadata(input, 'latest-mac.yml', document)
     expect(() => prepareReleaseAssets(input, output, '0.20.0')).toThrow(/size mismatch/)
@@ -321,7 +321,7 @@ describe('release contract', () => {
 
   it('rejects stale updater hashes', () => {
     const { input, output } = makeReleaseFixture()
-    const document = metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip')
+    const document = metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip')
     document.files[0].sha512 = Buffer.alloc(64).toString('base64')
     writeMetadata(input, 'latest-mac.yml', document)
     expect(() => prepareReleaseAssets(input, output, '0.20.0')).toThrow(/sha512 mismatch/)
@@ -329,9 +329,9 @@ describe('release contract', () => {
 
   it('rejects missing updater architecture coverage', () => {
     const { input, output } = makeReleaseFixture()
-    const universal = writeAsset(input, 'Nomi-mac-universal.zip')
-    const document = metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip')
-    const x64Zip = document.files.find(({ url }) => url === 'Nomi-mac-x64.zip')
+    const universal = writeAsset(input, 'iPix-mac-universal.zip')
+    const document = metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip')
+    const x64Zip = document.files.find(({ url }) => url === 'iPix-mac-x64.zip')
     x64Zip.url = path.basename(universal)
     x64Zip.sha512 = digest(universal)
     x64Zip.size = fs.statSync(universal).size
@@ -341,8 +341,8 @@ describe('release contract', () => {
 
   it('rejects a top-level updater path missing from files', () => {
     const { input, output } = makeReleaseFixture()
-    const document = metadataDocument(input, MAC_ASSETS, 'Nomi-mac-arm64.zip')
-    document.path = 'Nomi-mac-missing.zip'
+    const document = metadataDocument(input, MAC_ASSETS, 'iPix-mac-arm64.zip')
+    document.path = 'iPix-mac-missing.zip'
     writeMetadata(input, 'latest-mac.yml', document)
     expect(() => prepareReleaseAssets(input, output, '0.20.0')).toThrow(/path references missing files entry/)
   })

@@ -80,5 +80,7 @@ describe("defaultProjectsFolderName", () => {
     expect(defaultProjectsFolderName("Nomi")).toBe("Nomi Projects");
     expect(defaultProjectsFolderName("nomi")).toBe("Nomi Projects");
     expect(defaultProjectsFolderName("Nomi Preview")).toBe("Nomi Preview Projects");
+    expect(defaultProjectsFolderName("iPix")).toBe("Nomi Projects");
+    expect(defaultProjectsFolderName("iPix Preview")).toBe("Nomi Preview Projects");
   });
 });

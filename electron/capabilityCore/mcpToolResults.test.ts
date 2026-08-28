@@ -13,7 +13,7 @@ describe('buildToolOutcome (A2 结果重写：转述原材料 + 参数回显)', 
     expect(text).toContain('未花费')
     expect(text).toContain('brand.promo')
     expect(text).toContain('60s')
-    expect(text).toContain('在 Nomi 打开 nomi://open/run_7f32')
+    expect(text).toContain('在 iPix 打开 nomi://open/run_7f32')
     expect(outcome).toMatchObject({ kind: 'run_draft', runId: 'run_7f32', projectId: 'p1', nextActions: ['pick_direction'] })
   })
 
@@ -119,7 +119,7 @@ describe('buildToolOutcome (A2 结果重写：转述原材料 + 参数回显)', 
           evaluated: true, passed: false, retries: 2,
           scores: { identity: 1, composition: 5, continuity: 5 },
           flagged: [{ dimension: 'identity', dimensionName: '身份', score: 1, reason: '张冠李戴' }],
-          suggestion: '建议在 Nomi 里重滚这一镜',
+          suggestion: '建议在 iPix 里重滚这一镜',
         },
       },
     )
@@ -140,7 +140,7 @@ describe('buildToolOutcome (A2 结果重写：转述原材料 + 参数回显)', 
         verify: {
           evaluated: true, passed: false, retries: 2, scores: { identity: 1 },
           flagged: [{ dimension: 'identity', dimensionName: 'identity', score: 1, reason: 'wrong subject' }],
-          suggestion: 're-roll this shot in Nomi',
+          suggestion: 're-roll this shot in iPix',
         },
       },
       'en',
@@ -200,8 +200,8 @@ describe('nomi_list_models 转述（交付1：只有 keyStatus=ok 说可用 + �
   const modelsResult = {
     models: [
       { vendor: 'apimart', modelKey: 'seedream', label: 'Seedream', kind: 'image', keyStatus: 'ok', statusReason: '已接入且可用', references: { image: true, video: false, audio: false, multiImage: true, referenceModes: ['image_edit'] } },
-      { vendor: 'kie', modelKey: 'kie-x', label: 'Kie X', kind: 'video', keyStatus: 'missing', statusReason: '未配置 Kie 的 API Key；请先在 Nomi 应用的模型接入里填入', references: { image: false, video: false, audio: false, multiImage: false, referenceModes: [] } },
-      { vendor: 'volcengine', modelKey: 'volc-y', label: '火山 Y', kind: 'image', keyStatus: 'locked', statusReason: '火山 的 API Key 已保存但当前宿主身份解不开；请在 Nomi 应用里重新保存该 Key', references: { image: false, video: false, audio: false, multiImage: false, referenceModes: [] } },
+      { vendor: 'kie', modelKey: 'kie-x', label: 'Kie X', kind: 'video', keyStatus: 'missing', statusReason: '未配置 Kie 的 API Key；请先在 iPix 应用的模型接入里填入', references: { image: false, video: false, audio: false, multiImage: false, referenceModes: [] } },
+      { vendor: 'volcengine', modelKey: 'volc-y', label: '火山 Y', kind: 'image', keyStatus: 'locked', statusReason: '火山 的 API Key 已保存但当前宿主身份解不开；请在 iPix 应用里重新保存该 Key', references: { image: false, video: false, audio: false, multiImage: false, referenceModes: [] } },
     ],
   }
 
@@ -314,7 +314,7 @@ describe('buildToolErrorOutcome (A6 错误契约)', () => {
       code: 'human_approval_required', nextAction: 'nomi://settings/automation', phase: 'e1_paid', capability: 'gate_decide',
     })
     const { text, outcome } = buildToolErrorOutcome('nomi_decide_generation_gate', error)
-    expect(text).toContain('请在 Nomi 确认这次生成')
+    expect(text).toContain('请在 iPix 确认这次生成')
     expect(text).not.toContain('human_approval_required')
     expect(outcome).toMatchObject({ errorCode: 'human_approval_required', nextActions: ['in_nomi'], nextAction: 'nomi://settings/automation' })
   })

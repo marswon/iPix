@@ -95,9 +95,9 @@ function validateUpdaterMetadata({ metadataPath, copied, expectedVersion, platfo
     if (entries.has(assetName)) throw new Error(`${name} references ${assetName} more than once`)
     const assetPath = copied.get(assetName)
     if (!assetPath) throw new Error(`${name} references missing release asset ${assetName}`)
-    if (platform === 'mac' && !/^Nomi-mac-/.test(assetName))
+    if (platform === 'mac' && !/^iPix-mac-/.test(assetName))
       throw new Error(`${name} references non-mac asset ${assetName}`)
-    if (platform === 'windows' && !/^Nomi-win-/.test(assetName))
+    if (platform === 'windows' && !/^iPix-win-/.test(assetName))
       throw new Error(`${name} references non-Windows asset ${assetName}`)
 
     const arch = assetArchitecture(assetName)
@@ -331,18 +331,18 @@ export function prepareReleaseAssets(inputRoot, outputDir, expectedVersion) {
   fs.mkdirSync(outputDir, { recursive: true })
   const copied = copyUniqueByBasename(listFiles(inputRoot), outputDir)
 
-  const macArmDmg = requireAsset(copied, 'Nomi-mac-arm64.dmg')
-  const macIntelDmg = requireAsset(copied, 'Nomi-mac-x64.dmg')
-  requireAsset(copied, 'Nomi-mac-arm64.zip')
-  requireAsset(copied, 'Nomi-mac-x64.zip')
+  const macArmDmg = requireAsset(copied, 'iPix-mac-arm64.dmg')
+  const macIntelDmg = requireAsset(copied, 'iPix-mac-x64.dmg')
+  requireAsset(copied, 'iPix-mac-arm64.zip')
+  requireAsset(copied, 'iPix-mac-x64.zip')
   const macMetadata = requireAsset(copied, 'latest-mac.yml')
   const windowsMetadata = requireAsset(copied, 'latest.yml')
   const windowsInstaller = requireSingleInstaller(copied)
   for (const assetName of [
-    'Nomi-mac-arm64.dmg',
-    'Nomi-mac-x64.dmg',
-    'Nomi-mac-arm64.zip',
-    'Nomi-mac-x64.zip',
+    'iPix-mac-arm64.dmg',
+    'iPix-mac-x64.dmg',
+    'iPix-mac-arm64.zip',
+    'iPix-mac-x64.zip',
     path.basename(windowsInstaller),
   ]) {
     requireValidBlockmap(copied, assetName)
@@ -354,8 +354,8 @@ export function prepareReleaseAssets(inputRoot, outputDir, expectedVersion) {
     expectedVersion: normalizedVersion,
     platform: 'mac',
     requiredAssets: [
-      { assetName: 'Nomi-mac-arm64.zip', arch: 'arm64' },
-      { assetName: 'Nomi-mac-x64.zip', arch: 'x64' },
+      { assetName: 'iPix-mac-arm64.zip', arch: 'arm64' },
+      { assetName: 'iPix-mac-x64.zip', arch: 'x64' },
     ],
   })
   validateUpdaterMetadata({
@@ -366,9 +366,9 @@ export function prepareReleaseAssets(inputRoot, outputDir, expectedVersion) {
     requiredAssets: [{ assetName: path.basename(windowsInstaller), arch: 'x64' }],
   })
 
-  writeAlias(macArmDmg, outputDir, 'Nomi-mac-arm64.dmg')
-  writeAlias(macIntelDmg, outputDir, 'Nomi-mac-intel.dmg')
-  writeAlias(windowsInstaller, outputDir, 'Nomi-windows-setup.exe')
+  writeAlias(macArmDmg, outputDir, 'iPix-mac-arm64.dmg')
+  writeAlias(macIntelDmg, outputDir, 'iPix-mac-intel.dmg')
+  writeAlias(windowsInstaller, outputDir, 'iPix-windows-setup.exe')
 
   const publishFiles = fs
     .readdirSync(outputDir)
