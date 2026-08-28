@@ -39,7 +39,8 @@ function assert(condition, label) {
   console.log(`  ✓ ${label}`)
 }
 
-const prompt = 'A locked camera observes soft daylight moving across a plain white wall.'
+const prompt = 'Use the referenced landscape as the visual identity. A slow forward camera move with natural cloud motion.'
+const referenceUrl = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=320&auto=format'
 const session = await launchNomiApp({ name: 'gettoken-seedance-repair', userDataDir, settingsDir, projectsDir })
 let completed = false
 try {
@@ -59,8 +60,8 @@ try {
     verifierRun = response?.run || verifierRun
   }
   const verifiedMode = verifierRun.models?.some((item) => item.modes?.some((mode) => mode.state === 'verified'))
-  const exhaustedCleanly = verifierRun.stage === 'failed' && verifierRun.models?.every((item) =>
-    item.modes?.every((mode) => mode.stage === 'poll' && String(mode.error || '').includes('timed out while polling')))
+  const exhaustedCleanly = ['failed', 'timed_out'].includes(verifierRun.stage) && verifierRun.models?.every((item) =>
+    item.modes?.every((mode) => /timed out|deadline was reached/i.test(String(mode.error || ''))))
   assert((['completed', 'partial'].includes(verifierRun.stage) && verifiedMode) || exhaustedCleanly, `live verifier preserves task identity through completion or the polling budget (${verifierRun.stage})`)
   assert(!JSON.stringify(verifierRun).includes('/22'), 'live verifier never redirects polling to numeric row 22')
   assert(!JSON.stringify(verifierRun).includes('task_not_exist'), 'live verifier never receives task_not_exist')
@@ -69,7 +70,7 @@ try {
     model: window.nomiDesktop.modelCatalog.listModels({ vendorKey: vendor }).find((item) => item.modelKey === key),
     mappings: window.nomiDesktop.modelCatalog.listMappings().filter((item) => item.vendorKey === vendor && item.modelKey === key),
   }), { vendor: 'gettoken-2', key: modelKey })
-  assert(catalog.model?.meta?.catalogPresetRevision === 3, 'startup upgrades the stale credential-scoped model to revision 3')
+  assert(catalog.model?.meta?.catalogPresetRevision === 4, 'startup upgrades the stale credential-scoped model to revision 4')
   assert(catalog.mappings.length === 2 && catalog.mappings.every((mapping) => mapping.enabled), 'both repaired video mappings stay enabled')
   assert(catalog.mappings.every((mapping) => JSON.stringify(mapping.query?.response_mapping).includes('data.result_url')), 'current result URL mapping replaces the stale query contract')
 
@@ -93,16 +94,24 @@ try {
   }
 
   const { grantId } = await session.win.evaluate(async () => window.nomiDesktop.tasks.grantSpend({ nodeIds: [] }))
-  const initial = await session.win.evaluate(async ({ grant, taskPrompt, key }) => window.nomiDesktop.tasks.run({
+  const initial = await session.win.evaluate(async ({ grant, taskPrompt, key, image }) => window.nomiDesktop.tasks.run({
     vendor: 'gettoken-2',
-    request: { kind: 'text_to_video', prompt: taskPrompt, extras: { modelKey: key, grantId: grant, duration: 5, ratio: '16:9', resolution: '720p', generate_audio: false, forceRerun: true } },
-  }), { grant: grantId, taskPrompt: prompt, key: modelKey })
+    request: {
+      kind: 'image_to_video',
+      prompt: taskPrompt,
+      extras: {
+        modelKey: key, grantId: grant, duration: 5, ratio: '16:9', resolution: '720p', generate_audio: false, forceRerun: true,
+        referenceImages: [image],
+        archetypeInput: { volcengine_image_contents: [{ type: 'image_url', image_url: { url: image }, role: 'reference_image' }] },
+      },
+    },
+  }), { grant: grantId, taskPrompt: prompt, key: modelKey, image: referenceUrl })
   assert(initial?.id?.startsWith('task_'), 'canvas-equivalent submit keeps provider task identity')
 
   let final = initial
   for (let attempt = 0; attempt < 40 && !['succeeded', 'failed'].includes(final.status); attempt += 1) {
     await new Promise((resolve) => setTimeout(resolve, 10_000))
-    const response = await session.win.evaluate(async ({ taskId, taskPrompt, key }) => window.nomiDesktop.tasks.result({ taskId, vendor: 'gettoken-2', taskKind: 'text_to_video', prompt: taskPrompt, modelKey: key }), { taskId: initial.id, taskPrompt: prompt, key: modelKey })
+    const response = await session.win.evaluate(async ({ taskId, taskPrompt, key }) => window.nomiDesktop.tasks.result({ taskId, vendor: 'gettoken-2', taskKind: 'image_to_video', prompt: taskPrompt, modelKey: key }), { taskId: initial.id, taskPrompt: prompt, key: modelKey })
     final = response?.result || final
     console.log(`    poll ${attempt + 1}: ${final.status}`)
   }

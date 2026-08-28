@@ -96,7 +96,7 @@ export const SEEDANCE_VOLCENGINE_ARCHETYPE: ModelArchetype = {
     },
   ],
   modes: MODES,
-  vendorModeIds: { gettoken: ["t2v", "first", "firstlast"] },
+  vendorModeIds: { gettoken: ["t2v", "first", "firstlast", "omni"] },
   variants: [
     { id: "standard", label: "标准", modelKey: "doubao-seedance-2-0-260128" },
     { id: "fast", label: "快速", modelKey: "doubao-seedance-2-0-fast-260128", paramOverrides: LOW_RES_OVERRIDES },

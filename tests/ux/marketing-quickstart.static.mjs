@@ -68,6 +68,7 @@ async function auditViewport(browser, name, viewport) {
   assert(result.headings.some((h) => h.includes('接入 GetToken')), `${name}: GetToken 章节可见`)
   assert(result.headings.some((h) => h.includes('Qwen Pro 参考图改图')), `${name}: Qwen 改图章节可见`)
   assert(result.headings.some((h) => h.includes('生成第一段视频')), `${name}: Seedance 章节可见`)
+  assert(result.headings.includes('全能参考'), `${name}: GetToken Seedance 全能参考教程可见`)
   assert(result.links.includes('https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.7/iPix.Preview-mac-arm64.dmg'), `${name}: Mac arm64 下载链接在位`)
   assert(result.links.includes('https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.7/iPix.Preview-mac-x64.dmg'), `${name}: Mac Intel 下载链接在位`)
   assert(result.links.includes('https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.7/iPix.Preview-win-x64.exe'), `${name}: Windows 下载链接在位`)

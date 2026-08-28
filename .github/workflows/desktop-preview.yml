@@ -163,7 +163,7 @@ jobs:
 
           - Fixes Qwen Image 2.0 Pro reference-image editing through the verified GetToken image endpoint.
           - Supports multiple independent GetToken credentials and stable Seedance 2.0 polling.
-          - Repairs stale credential-scoped Seedance mappings, preserves provider task identity during model tests, and extracts current GetToken result URLs.
+          - Repairs stale credential-scoped Seedance mappings, preserves provider task identity during model tests, extracts current result URLs, and enables Seedance 2.0 omni-reference inputs on GetToken.
           - Includes Apple Silicon DMG, Intel x64 DMG (macOS 12.0+), and Windows x64 installer assets from the same source commit.
           - Upgrade note: quit and remove the old Nomi Preview app after installing iPix Preview; existing projects, settings, and credentials remain in the compatible data directory.
           - Source commit: $SOURCE_SHA

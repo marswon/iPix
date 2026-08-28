@@ -163,6 +163,36 @@ describe("GetToken Seedance wire profile", () => {
     expect(body).not.toHaveProperty("_gettoken_last_frame");
   });
 
+  it("全能参考展开图/视频/音频 content，并用参考图补顶层 images", async () => {
+    const { body } = await renderRequest(GETTOKEN_SEEDANCE_PROFILE.create.image_to_video!, {
+      ...baseParams,
+      archetypeInput: {
+        volcengine_image_contents: [
+          { type: "image_url", image_url: { url: "https://cdn.example/character-1.png" }, role: "reference_image" },
+          { type: "image_url", image_url: { url: "https://cdn.example/character-2.png" }, role: "reference_image" },
+        ],
+        volcengine_video_contents: [
+          { type: "video_url", video_url: { url: "https://cdn.example/motion.mp4" }, role: "reference_video" },
+        ],
+        volcengine_audio_contents: [
+          { type: "audio_url", audio_url: { url: "https://cdn.example/voice.mp3" }, role: "reference_audio" },
+        ],
+      },
+    });
+    expect(body).toMatchObject({
+      images: ["https://cdn.example/character-1.png", "https://cdn.example/character-2.png"],
+      metadata: {
+        content: [
+          { image_url: { url: "https://cdn.example/character-1.png" }, role: "reference_image" },
+          { image_url: { url: "https://cdn.example/character-2.png" }, role: "reference_image" },
+          { video_url: { url: "https://cdn.example/motion.mp4" }, role: "reference_video" },
+          { audio_url: { url: "https://cdn.example/voice.mp3" }, role: "reference_audio" },
+        ],
+      },
+    });
+    expect(body).not.toHaveProperty("image");
+  });
+
   it("headless 首尾帧没有 archetypeInput 时仍补齐角色化 metadata.content", async () => {
     const { body } = await renderRequest(GETTOKEN_SEEDANCE_PROFILE.create.image_to_video!, {
       ...baseParams,
@@ -207,7 +237,7 @@ describe("GetToken Seedance wire profile", () => {
     ).rejects.toThrow("缺少首帧");
   });
 
-  it("能力判据放行首帧/首尾帧，但不放行 omni 角色图", () => {
+  it("能力判据放行首帧/首尾帧和 omni 三类参考素材", () => {
     const body = GETTOKEN_SEEDANCE_PROFILE.create.image_to_video!.body;
     expect(modeSlotReach([{ kind: "first_frame", inputKey: "volcengine_first_image_content" }], body)).toEqual([
       "full",
@@ -221,7 +251,16 @@ describe("GetToken Seedance wire profile", () => {
         body,
       ),
     ).toEqual(["full", "full"]);
-    expect(modeSlotReach([{ kind: "image_ref", inputKey: "volcengine_image_contents" }], body)).toEqual(["none"]);
+    expect(
+      modeSlotReach(
+        [
+          { kind: "image_ref", inputKey: "volcengine_image_contents" },
+          { kind: "video_ref", inputKey: "volcengine_video_contents" },
+          { kind: "audio_ref", inputKey: "volcengine_audio_contents" },
+        ],
+        body,
+      ),
+    ).toEqual(["full", "full", "full"]);
 
     const request = {
       extras: {
@@ -238,7 +277,7 @@ describe("GetToken Seedance wire profile", () => {
         },
       },
     };
-    expect(unreachableReferenceLabels(request, body)).toContain("参考图");
+    expect(unreachableReferenceLabels(request, body)).toEqual([]);
   });
 
   it("启动时修复 credential-scoped GetToken 的旧查询映射且保留连接身份", () => {

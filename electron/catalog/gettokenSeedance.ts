@@ -6,7 +6,7 @@ import type { CatalogState, HttpOperation, Mapping } from "./types";
 import { isOfficialGetTokenEndpoint } from "./gettokenQwenImage";
 
 const REQUEST_TRANSFORM = "gettoken-seedance-frames";
-export const GETTOKEN_PRESET_REVISION = 3;
+export const GETTOKEN_PRESET_REVISION = 4;
 
 const JSON_HEADERS = {
   Authorization: "Bearer {{user_api_key}}",
@@ -32,16 +32,27 @@ const VIDEO_URL_PATHS = [
   "output.url",
 ];
 
+function referenceImageUrls(content: unknown[]): string[] {
+  return content.flatMap((item) => {
+    if (!isJsonRecord(item) || item.role !== "reference_image" || !isJsonRecord(item.image_url)) return [];
+    const url = firstString(item.image_url.url);
+    return url ? [url] : [];
+  });
+}
+
 function normalizeGetTokenSeedanceFrames(body: unknown): unknown {
   if (!isJsonRecord(body)) return body;
   const first = firstString(body._gettoken_first_frame);
   const last = firstString(body._gettoken_last_frame);
   const { _gettoken_first_frame: _first, _gettoken_last_frame: _last, ...clean } = body;
   if (last && !first) throw new Error("GetToken Seedance 首尾帧请求缺少首帧。");
-  if (!first) return clean;
 
   const metadata = isJsonRecord(clean.metadata) ? clean.metadata : {};
   const existingContent = Array.isArray(metadata.content) ? metadata.content : [];
+  if (!first) {
+    const images = referenceImageUrls(existingContent);
+    return images.length > 0 ? { ...clean, images } : clean;
+  }
   const content =
     existingContent.length > 0
       ? existingContent
@@ -85,6 +96,9 @@ function createOperation(withFrames: boolean): HttpOperation {
                 "{{request.params.volcengine_first_image_content}}",
                 "{{request.params.volcengine_first_role_image_content}}",
                 "{{request.params.volcengine_last_role_image_content}}",
+                "{{request.params.volcengine_image_contents}}",
+                "{{request.params.volcengine_video_contents}}",
+                "{{request.params.volcengine_audio_contents}}",
               ],
             }
           : {}),
