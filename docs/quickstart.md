@@ -36,7 +36,7 @@ xattr -dr com.apple.quarantine "/Applications/iPix Preview.app"
 
 打开 iPix 后，点击 **新建空白项目**。项目库还提供“打开已有文件夹”，适合把现成素材目录直接作为项目使用。
 
-![iPix 项目库](../../marketing/assets/guide/ipix-project-library.png)
+![iPix 项目库](../marketing/assets/guide/ipix-project-library.png)
 
 默认项目保存在文档目录下的 `Nomi Projects` 或 `Nomi Preview Projects`。目录名暂时保留，是为了兼容旧项目。
 
@@ -60,7 +60,7 @@ xattr -dr com.apple.quarantine "/Applications/iPix Preview.app"
 | 视频 | GetToken 列表中的 Seedance 2.0 模型 |
 | 文本助手 | 你账户中可用的文本模型，例如 Qwen 或 DeepSeek |
 
-![GetToken 已接入 iPix](../../marketing/assets/guide/gettoken-connected.png)
+![GetToken 已接入 iPix](../marketing/assets/guide/gettoken-connected.png)
 
 看到连接和模型数量，说明配置已经保存。验证状态只代表请求契约可用；余额不足、限流或上游维护仍可能让单次任务失败。
 
@@ -121,7 +121,7 @@ xattr -dr com.apple.quarantine "/Applications/iPix Preview.app"
 3. 选择 Seedance 2.0，并设置时长、分辨率和比例。
 4. 提示词重点描述运动，不要重复堆叠外观形容词。
 
-![图片到视频工作流](../../marketing/assets/guide/image-to-video-flow.svg)
+![图片到视频工作流](../marketing/assets/guide/image-to-video-flow.svg)
 
 视频任务通常比图片耗时长。不要重复点击生成；先到右上角 **任务** 查看是否仍在排队或轮询。
 
@@ -132,7 +132,7 @@ xattr -dr com.apple.quarantine "/Applications/iPix Preview.app"
 3. 在 **预览** 中完整播放一次。
 4. 点击导出，选择输出位置，生成 MP4。
 
-![iPix 时间轴](../../marketing/assets/screen-timeline-2026-08-17.png)
+![iPix 时间轴](../marketing/assets/screen-timeline-2026-08-17.png)
 
 ## 8. 常见问题
 
