@@ -10,7 +10,7 @@ on:
         required: true
         default: main
       prerelease_tag:
-        description: Optional prerelease tag; publishes macOS and Windows artifacts when set
+        description: Optional prerelease tag; publishes Apple Silicon, Intel macOS, and Windows artifacts when set
         required: false
         default: ''
 
@@ -54,6 +54,46 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  mac-intel-preview:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'desktop-preview')
+    runs-on: macos-15-intel
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || '' }}
+      - id: source
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - name: Package iPix Preview for Intel Mac
+        run: pnpm exec electron-builder --config electron-builder.preview.cjs --mac dmg --x64 --publish never
+      - name: Smoke packaged iPix MCP bridge on Intel
+        shell: bash
+        run: |
+          app_path=$(find release-preview -maxdepth 2 -name 'iPix Preview.app' -print -quit)
+          [[ -n "$app_path" ]] || { echo "Packaged Intel app not found" >&2; exit 1; }
+          executable="$app_path/Contents/MacOS/iPix Preview"
+          file "$executable" | grep -q 'x86_64' || { echo "Packaged app is not Intel x64" >&2; exit 1; }
+          minimum=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app_path/Contents/Info.plist")
+          [[ "$minimum" == "12.0" ]] || { echo "Unexpected macOS minimum: $minimum" >&2; exit 1; }
+          node tests/ux/packaged-mcp-smoke.e2e.mjs "$app_path"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ipix-preview-mac-x64
+          path: release-preview/*.dmg
+          if-no-files-found: error
+          retention-days: 7
+
   windows-preview:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'desktop-preview')
     runs-on: windows-latest
@@ -86,7 +126,7 @@ jobs:
 
   publish-prerelease:
     if: github.event_name == 'workflow_dispatch' && inputs.prerelease_tag != ''
-    needs: [mac-preview, windows-preview]
+    needs: [mac-preview, mac-intel-preview, windows-preview]
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -95,6 +135,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_TAG: ${{ inputs.prerelease_tag }}
       SOURCE_SHA: ${{ needs.mac-preview.outputs.source_sha }}
+      INTEL_SOURCE_SHA: ${{ needs.mac-intel-preview.outputs.source_sha }}
       WINDOWS_SOURCE_SHA: ${{ needs.windows-preview.outputs.source_sha }}
     steps:
       - uses: actions/download-artifact@v4
@@ -109,19 +150,29 @@ jobs:
           shopt -s nullglob
           dmgs=(prerelease/*.dmg)
           exes=(prerelease/*.exe)
-          [[ "$SOURCE_SHA" == "$WINDOWS_SOURCE_SHA" ]] || { echo "Platform source SHA mismatch" >&2; exit 1; }
-          [[ ${#dmgs[@]} -eq 1 && ${#exes[@]} -eq 1 ]] || { echo "Expected exactly one DMG and one EXE" >&2; exit 1; }
+          [[ "$SOURCE_SHA" == "$INTEL_SOURCE_SHA" && "$SOURCE_SHA" == "$WINDOWS_SOURCE_SHA" ]] || {
+            echo "Platform source SHA mismatch" >&2; exit 1;
+          }
+          [[ ${#dmgs[@]} -eq 2 && ${#exes[@]} -eq 1 ]] || { echo "Expected exactly two DMGs and one EXE" >&2; exit 1; }
+          [[ -f prerelease/iPix.Preview-mac-arm64.dmg && -f prerelease/iPix.Preview-mac-x64.dmg ]] || {
+            echo "Missing architecture-specific macOS asset" >&2; exit 1;
+          }
+          [[ -f prerelease/iPix.Preview-win-x64.exe ]] || { echo "Missing exact Windows x64 asset" >&2; exit 1; }
           notes=$(cat <<EOF
           iPix GetToken model-service test build.
 
           - Fixes Qwen Image 2.0 Pro reference-image editing through the verified GetToken image endpoint.
           - Supports multiple independent GetToken credentials and stable Seedance 2.0 polling.
-          - Includes Apple Silicon DMG and Windows x64 installer assets from the same source commit.
+          - Includes Apple Silicon DMG, Intel x64 DMG (macOS 12.0+), and Windows x64 installer assets from the same source commit.
           - Upgrade note: quit and remove the old Nomi Preview app after installing iPix Preview; existing projects, settings, and credentials remain in the compatible data directory.
           - Source commit: $SOURCE_SHA
           - Build run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           EOF
           )
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            && gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Refusing to create a release from a pre-existing unmanaged tag" >&2; exit 1
+          fi
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             draft=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
             target=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)
@@ -133,11 +184,15 @@ jobs:
           else
             gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --title "iPix $RELEASE_TAG" --notes "$notes" --prerelease --draft
           fi
-          gh release upload "$RELEASE_TAG" "${dmgs[0]}" "${exes[0]}" --repo "$GITHUB_REPOSITORY"
+          staged_target=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)
+          [[ "$staged_target" == "$SOURCE_SHA" ]] || { echo "Staged release target SHA mismatch" >&2; exit 1; }
+          gh release upload "$RELEASE_TAG" "${dmgs[@]}" "${exes[0]}" --repo "$GITHUB_REPOSITORY"
           asset_count=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets | length')
-          has_dmg=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name | endswith(".dmg")] | any')
-          has_exe=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name | endswith(".exe")] | any')
-          [[ "$asset_count" == "2" && "$has_dmg" == "true" && "$has_exe" == "true" ]] || {
+          dmg_count=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name | select(endswith(".dmg"))] | length')
+          has_arm=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name == "iPix.Preview-mac-arm64.dmg"] | any')
+          has_intel=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name == "iPix.Preview-mac-x64.dmg"] | any')
+          has_exe=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name == "iPix.Preview-win-x64.exe"] | any')
+          [[ "$asset_count" == "3" && "$dmg_count" == "2" && "$has_arm" == "true" && "$has_intel" == "true" && "$has_exe" == "true" ]] || {
             echo "Draft asset verification failed" >&2; exit 1;
           }
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease

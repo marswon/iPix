@@ -252,7 +252,7 @@ expect(
   'English README scopes supported release targets',
 )
 expect(
-  quickstart.includes('v0.21.0-gettoken.5') && quickstart.includes('github.com/marswon/iPix/releases'),
+  quickstart.includes('v0.21.0-gettoken.6') && quickstart.includes('github.com/marswon/iPix/releases'),
   'quickstart targets the verified dual-platform iPix prerelease',
 )
 expect(quickstart.includes(`"softwareVersion":"${releaseVersion}"`), 'quickstart structured data matches the release version')

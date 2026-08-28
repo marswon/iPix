@@ -1,20 +1,21 @@
 # iPix 零基础使用教程
 
-> 适用版本：`v0.21.0-gettoken.5`<br>
+> 适用版本：`v0.21.0-gettoken.6`<br>
 > 目标：从安装开始，完成第一张图片、第一次参考图改图，以及第一段 Seedance 2.0 视频。
 
 你不需要安装 Docker、数据库或开发工具。iPix 是本地桌面应用，项目、提示词和 API Key 都保存在自己的电脑上；真正生成图片和视频时，会消耗你在 GetToken 等模型服务商的余额。
 
 ## 1. 下载并安装
 
-当前测试版提供两个安装包：
+当前测试版提供三个安装包：
 
 | 系统 | 安装包 |
 |---|---|
-| macOS Apple Silicon（M1/M2/M3/M4） | [iPix.Preview-mac-arm64.dmg](https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.5/iPix.Preview-mac-arm64.dmg) |
-| Windows 10/11 x64 | [iPix.Preview-win-x64.exe](https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.5/iPix.Preview-win-x64.exe) |
+| macOS Apple Silicon（M1/M2/M3/M4） | [iPix.Preview-mac-arm64.dmg](https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.6/iPix.Preview-mac-arm64.dmg) |
+| macOS Intel x64（macOS 12.0+） | [iPix.Preview-mac-x64.dmg](https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.6/iPix.Preview-mac-x64.dmg) |
+| Windows 10/11 x64 | [iPix.Preview-win-x64.exe](https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.6/iPix.Preview-win-x64.exe) |
 
-完整发布页：[v0.21.0-gettoken.5](https://github.com/marswon/iPix/releases/tag/v0.21.0-gettoken.5)
+完整发布页：[v0.21.0-gettoken.6](https://github.com/marswon/iPix/releases/tag/v0.21.0-gettoken.6)
 
 ### macOS
 
@@ -142,7 +143,7 @@ xattr -dr com.apple.quarantine "/Applications/iPix Preview.app"
 
 ### Qwen 改图提示尺寸错误
 
-请使用 `v0.21.0-gettoken.5` 或更高版本。该版本会把 `1:1 + 1K` 转换成上游要求的像素尺寸。
+请使用 `v0.21.0-gettoken.6` 或更高版本。该版本会把 `1:1 + 1K` 转换成上游要求的像素尺寸。
 
 ### 生成成功但看不到图片
 
