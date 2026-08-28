@@ -62,19 +62,25 @@ async function auditViewport(browser, name, viewport) {
     return { title: document.title, overflow, headings, links, images, blankImages, missingAlt }
   })
 
-  assert(result.title.includes('iPix 新手指南'), `${name}: title 正确`)
+  assert(result.title.includes('iPix 零基础教程'), `${name}: title 正确`)
   assert(result.overflow <= 1, `${name}: 无横向溢出`)
-  assert(result.headings.includes('第一次打开 iPix，就这样做。'), `${name}: hero H1 可见`)
-  assert(result.headings.some((h) => h.includes('Image-to-Video')), `${name}: Image-to-Video 章节可见`)
-  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-mac-arm64.dmg'), `${name}: Mac arm64 下载链接在位`)
-  assert(result.links.includes('https://github.com/aqm857886159/Nomi/releases/latest/download/iPix-windows-setup.exe'), `${name}: Windows 下载链接在位`)
+  assert(result.headings.includes('从安装到第一张改图、第一段视频。'), `${name}: hero H1 可见`)
+  assert(result.headings.some((h) => h.includes('接入 GetToken')), `${name}: GetToken 章节可见`)
+  assert(result.headings.some((h) => h.includes('Qwen Pro 参考图改图')), `${name}: Qwen 改图章节可见`)
+  assert(result.headings.some((h) => h.includes('生成第一段视频')), `${name}: Seedance 章节可见`)
+  assert(result.links.includes('https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.5/iPix.Preview-mac-arm64.dmg'), `${name}: Mac arm64 下载链接在位`)
+  assert(result.links.includes('https://github.com/marswon/iPix/releases/download/v0.21.0-gettoken.5/iPix.Preview-win-x64.exe'), `${name}: Windows 下载链接在位`)
   assert(result.images.length >= 5, `${name}: 示意图资源已嵌入`)
   assert(result.blankImages.length === 0, `${name}: 图片非空渲染`)
   assert(result.missingAlt.length === 0, `${name}: 图片 alt 完整`)
   await page.close()
 }
 
-const browser = await chromium.launch()
+const bundledBrowser = chromium.executablePath()
+const configuredBrowser = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+const browser = await chromium.launch(!existsSync(bundledBrowser) && configuredBrowser
+  ? { executablePath: configuredBrowser }
+  : {})
 try {
   await auditViewport(browser, 'desktop', { width: 1440, height: 1200 })
   await auditViewport(browser, 'mobile', { width: 390, height: 844 })

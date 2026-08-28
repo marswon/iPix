@@ -251,7 +251,10 @@ expect(
   readmeEn.includes('Linux, Windows arm64, and macOS universal installers are not currently published'),
   'English README scopes supported release targets',
 )
-expect(quickstart.includes(`data-latest-version>v${releaseVersion}<`), 'quickstart fallback version matches the release')
+expect(
+  quickstart.includes('v0.21.0-gettoken.5') && quickstart.includes('github.com/marswon/iPix/releases'),
+  'quickstart targets the verified dual-platform iPix prerelease',
+)
 expect(quickstart.includes(`"softwareVersion":"${releaseVersion}"`), 'quickstart structured data matches the release version')
 expect(quickstart.includes('macOS 12+'), 'quickstart states the macOS minimum version')
 
