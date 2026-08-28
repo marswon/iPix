@@ -5,6 +5,7 @@ import type {
   ModelParameterControl,
 } from "./types";
 import type { VideoModelCandidate } from "./recommendation";
+import { capabilityProviderKey } from "./providerSpecialization";
 import { AGNES_VIDEO_ARCHETYPE } from "./agnesVideo";
 import { AGNES_VIDEO_25_ARCHETYPE, AGNES_VIDEO_25_FLASH_ARCHETYPE } from "./agnesVideo25";
 import { DREAMINA_MULTIFRAME_ARCHETYPE } from "./dreaminaMultiframe";
@@ -175,15 +176,16 @@ function profileFor(model: VideoCatalogModel): ModelArchetype {
 }
 
 function specializeForProvider(archetype: ModelArchetype, provider: string): ModelArchetype {
-  const allowedModeIds = archetype.vendorModeIds?.[provider];
+  const providerKey = capabilityProviderKey(archetype, provider);
+  const allowedModeIds = archetype.vendorModeIds?.[providerKey];
   const modes = allowedModeIds
     ? archetype.modes.filter((mode) => allowedModeIds.includes(mode.id))
     : archetype.modes;
-  const hasParamOverrides = modes.some((mode) => mode.vendorParams?.[provider]);
+  const hasParamOverrides = modes.some((mode) => mode.vendorParams?.[providerKey]);
   if (!allowedModeIds && !hasParamOverrides) return archetype;
   const specializedModes = hasParamOverrides
     ? modes.map((mode) => {
-        const params = mode.vendorParams?.[provider];
+        const params = mode.vendorParams?.[providerKey];
         return params ? { ...mode, params } : mode;
       })
     : modes;

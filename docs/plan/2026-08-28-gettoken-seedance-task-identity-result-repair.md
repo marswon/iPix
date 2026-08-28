@@ -16,7 +16,7 @@ A paid 5-second 720p text-to-video probe against the configured GetToken credent
 - Create: top-level `id` and `task_id` are provider `task_*` strings.
 - Query: `data.id` is a numeric database row; `data.task_id` is the immutable provider handle.
 - Terminal query: video URL is present at both `data.result_url` and `data.data.content.video_url`.
-- A paid omni-reference probe with top-level `images` plus `metadata.content[].role=reference_image` was accepted, retained a provider `task_*` handle, and completed with a video URL.
+- Paid omni-reference probes for `reference_image`, `reference_video`, and the required `reference_image` + `reference_audio` combination were each accepted, retained provider `task_*` handles, and completed with video URLs.
 
 ## Root Causes
 
@@ -32,6 +32,7 @@ A paid 5-second 720p text-to-video probe against the configured GetToken credent
 - Repair complete Seedance create/query/status contracts at startup for every official GetToken connection, preserving vendor keys, credentials, mapping IDs, and creation timestamps.
 - Give video verification a 180-second/60-poll budget while retaining the five-minute adapter batch ceiling.
 - Expose the existing Seedance `全能参考` mode for GetToken and carry image/video/audio reference content through the repaired `image_to_video` mapping; derive top-level `images` from role-tagged image references for New API routing.
+- Make credential-scoped provider keys inherit an explicitly declared canonical capability contract in both GUI and recommendation projections, without rewriting unrelated numeric-suffix providers.
 - Add regression tests for numeric query IDs, simultaneous credential-scoped startup repair, result URL extraction, and verifier multi-poll identity preservation.
 
 ## Acceptance

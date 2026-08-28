@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getArchetypeById, resolveArchetypeForModel, specializeArchetypeForVariant, type ArchetypeModelLike } from "./index";
+import { getArchetypeById, resolveArchetypeForModel, specializeArchetypeForVariant, specializeArchetypeForVendor, type ArchetypeModelLike } from "./index";
 
 /** Fixture factory: fill in the required `vendorKey` (null = vendor unknown) so inline objects stay concise. */
 const m = (fields: Omit<ArchetypeModelLike, "vendorKey"> & Partial<Pick<ArchetypeModelLike, "vendorKey">>): ArchetypeModelLike => ({
@@ -27,6 +27,15 @@ describe("resolveArchetypeForModel — 供应商无关的识别桥", () => {
       expect(a?.id).toBe("volcengine-seedance-2");
       expect(a?.modes.map((mode) => mode.id)).toEqual(["t2v", "first", "firstlast", "omni"]);
     }
+  });
+
+  it("credential-scoped 连接继承 canonical mode allowlist，不泄漏未来的供应商专属模式", () => {
+    const base = getArchetypeById("volcengine-seedance-2")!;
+    const futureMode = { ...base.modes[0], id: "future-volcengine-only" };
+    const expanded = { ...base, modes: [...base.modes, futureMode] };
+    expect(specializeArchetypeForVendor(expanded, "gettoken-2").modes.map((mode) => mode.id)).toEqual([
+      "t2v", "first", "firstlast", "omni",
+    ]);
   });
 
   it("画布节点持久化的 meta.archetype.id 直接命中，即使供应商 modelKey 不在 patterns", () => {

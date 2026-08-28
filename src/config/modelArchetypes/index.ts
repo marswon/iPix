@@ -1,4 +1,5 @@
 import type { ModelParameterControl } from "../modelCatalogMeta";
+import { capabilityProviderKey } from "../../../electron/shared/videoCapabilities/providerSpecialization";
 import { SEEDANCE_2_ARCHETYPE } from "./seedance";
 import { HUNYUAN3D_ARCHETYPE } from "./hunyuan3d";
 import { HITEM3D_ARCHETYPE } from "./hitem3d";
@@ -209,7 +210,7 @@ function resolveBaseArchetype(model: ArchetypeModelLike): ModelArchetype | null 
  * 无 vendorKey、或没有任何模式为该供应商声明 vendorParams → 原样返回（绝大多数情况，零开销）。
  */
 export function specializeArchetypeForVendor(archetype: ModelArchetype, vendorKey: string | null | undefined): ModelArchetype {
-  const key = typeof vendorKey === "string" ? vendorKey.trim() : "";
+  const key = capabilityProviderKey(archetype, vendorKey);
   if (!key) return archetype;
   const allowedModeIds = archetype.vendorModeIds?.[key];
   const modes = allowedModeIds ? archetype.modes.filter((mode) => allowedModeIds.includes(mode.id)) : archetype.modes;
