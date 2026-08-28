@@ -2,17 +2,18 @@ import { firstString, isJsonRecord } from "../jsonUtils";
 import { registerRequestTransform } from "../tasks/requestTransforms";
 import type { NativeWireProfile } from "./nativeWireProfiles";
 import { NEWAPI_STATUS_MAPPING } from "./newapiTransport";
-import type { HttpOperation } from "./types";
+import type { CatalogState, HttpOperation, Mapping } from "./types";
+import { isOfficialGetTokenEndpoint } from "./gettokenQwenImage";
 
 const REQUEST_TRANSFORM = "gettoken-seedance-frames";
-export const GETTOKEN_PRESET_REVISION = 2;
+export const GETTOKEN_PRESET_REVISION = 3;
 
 const JSON_HEADERS = {
   Authorization: "Bearer {{user_api_key}}",
   "Content-Type": "application/json",
 };
 
-const TASK_ID_PATHS = ["task_id", "id", "data.task_id", "data.id", "data.0.task_id", "data.0.id"];
+const TASK_ID_PATHS = ["task_id", "data.task_id", "data.0.task_id", "id", "data.id", "data.0.id"];
 const STATUS_PATHS = ["status", "task_status", "data.status", "data.task_status", "data.0.status"];
 const VIDEO_URL_PATHS = [
   "data[*].url",
@@ -149,3 +150,76 @@ export const GETTOKEN_SEEDANCE_PROFILE: NativeWireProfile = {
   query: GETTOKEN_SEEDANCE_QUERY_OP,
   statusMapping: NEWAPI_STATUS_MAPPING,
 };
+
+function operationMatches(actual: HttpOperation | undefined, expected: HttpOperation): boolean {
+  return Boolean(actual && JSON.stringify(actual) === JSON.stringify(expected));
+}
+
+function repairedMapping(
+  existing: Mapping | undefined,
+  vendorKey: string,
+  modelKey: string,
+  taskKind: "text_to_video" | "image_to_video",
+  now: string,
+): Mapping {
+  return {
+    id: existing?.id || `catalog:${vendorKey}:${modelKey}:${taskKind}`,
+    vendorKey,
+    modelKey,
+    taskKind,
+    name: existing?.name || `Seedance 2.0 · ${taskKind === "text_to_video" ? "文生视频" : "图生视频"}`,
+    enabled: true,
+    create: GETTOKEN_SEEDANCE_PROFILE.create[taskKind]!,
+    query: GETTOKEN_SEEDANCE_QUERY_OP,
+    statusMapping: NEWAPI_STATUS_MAPPING,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+}
+
+/** Startup self-heal for stale Seedance mappings on every credential-scoped official GetToken connection. */
+export function repairGetTokenSeedanceContracts(state: CatalogState, now: string): boolean {
+  const officialVendorKeys = new Set(
+    state.vendors.filter((vendor) => isOfficialGetTokenEndpoint(vendor.baseUrlHint)).map((vendor) => vendor.key),
+  );
+  let changed = false;
+  for (let modelIndex = 0; modelIndex < state.models.length; modelIndex += 1) {
+    const model = state.models[modelIndex];
+    if (!officialVendorKeys.has(model.vendorKey) || model.modelKey !== GETTOKEN_SEEDANCE_MODEL_SEED.modelKey) continue;
+    const meta = model.meta && typeof model.meta === "object" && !Array.isArray(model.meta)
+      ? model.meta as Record<string, unknown>
+      : {};
+    const mappings = (["text_to_video", "image_to_video"] as const).map((taskKind) => state.mappings.find((mapping) =>
+      mapping.vendorKey === model.vendorKey && mapping.modelKey === model.modelKey && mapping.taskKind === taskKind));
+    const current = Number(meta.catalogPresetRevision || 0) >= GETTOKEN_PRESET_REVISION &&
+      meta.wireProfile === GETTOKEN_SEEDANCE_PROFILE.id && mappings.every((mapping, index) => {
+        const taskKind = index === 0 ? "text_to_video" : "image_to_video";
+        return Boolean(mapping?.enabled && operationMatches(mapping.create, GETTOKEN_SEEDANCE_PROFILE.create[taskKind]!) &&
+          operationMatches(mapping.query, GETTOKEN_SEEDANCE_QUERY_OP) &&
+          JSON.stringify(mapping.statusMapping) === JSON.stringify(NEWAPI_STATUS_MAPPING));
+      });
+    if (current) continue;
+    state.models[modelIndex] = {
+      ...model,
+      enabled: true,
+      meta: {
+        ...meta,
+        wireProfile: GETTOKEN_SEEDANCE_PROFILE.id,
+        archetypeId: GETTOKEN_SEEDANCE_PROFILE.archetypeId,
+        catalogManagedWire: true,
+        catalogPresetRevision: GETTOKEN_PRESET_REVISION,
+      },
+      updatedAt: now,
+    };
+    for (const taskKind of ["text_to_video", "image_to_video"] as const) {
+      const mappingIndex = state.mappings.findIndex((mapping) =>
+        mapping.vendorKey === model.vendorKey && mapping.modelKey === model.modelKey && mapping.taskKind === taskKind);
+      const replacement = repairedMapping(mappingIndex >= 0 ? state.mappings[mappingIndex] : undefined,
+        model.vendorKey, model.modelKey, taskKind, now);
+      if (mappingIndex >= 0) state.mappings[mappingIndex] = replacement;
+      else state.mappings.unshift(replacement);
+    }
+    changed = true;
+  }
+  return changed;
+}

@@ -117,7 +117,7 @@ describe("verifyAdapterMode", () => {
     const normalize = vi
       .fn()
       .mockResolvedValueOnce({ result: { ...result("queued"), kind: "text_to_video", id: "job-1" }, providerMeta: { task_id: "job-1" } })
-      .mockResolvedValueOnce({ result: { ...result("running"), kind: "text_to_video", id: "job-1" }, providerMeta: { task_id: "job-1" } })
+      .mockResolvedValueOnce({ result: { ...result("running"), kind: "text_to_video", id: "job-1" }, providerMeta: { task_id: "22" } })
       .mockResolvedValueOnce({
         result: {
           ...result("succeeded", [{ type: "video", url: "https://cdn.example.com/out.mp4" }]),
@@ -143,7 +143,8 @@ describe("verifyAdapterMode", () => {
 
     expect(verification.ok).toBe(true);
     expect(execute).toHaveBeenCalledTimes(3);
-    expect(execute.mock.calls[1]?.[0].providerMeta).toEqual({ task_id: "job-1" });
+    expect(execute.mock.calls[1]?.[0].providerMeta).toMatchObject({ task_id: "job-1" });
+    expect(execute.mock.calls[2]?.[0].providerMeta).toMatchObject({ task_id: "job-1" });
   });
 
   it("injects a local reference fixture into the declared request parameter", async () => {

@@ -71,7 +71,7 @@ import { CODEX_LOCAL_VENDOR_SEED, CODEX_IMAGE_CURATED_MODELS, CODEX_IMAGE_CURATE
 import { VOLCENGINE_IMAGE_MODELS } from "./volcengineImages";
 import { VOLCENGINE_AUDIO_MODELS } from "./volcengineAudios";
 import { VOLCENGINE_SEEDANCE_QUERY_OP, VOLCENGINE_SEEDANCE_STATUS_MAPPING, VOLCENGINE_VIDEO_MODELS } from "./volcengineVideos";
-import { GETTOKEN_PRESET_REVISION, GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED } from "./gettokenSeedance";
+import { GETTOKEN_PRESET_REVISION, GETTOKEN_SEEDANCE_MODEL_SEED, GETTOKEN_SEEDANCE_PROFILE, GETTOKEN_VENDOR_SEED, repairGetTokenSeedanceContracts } from "./gettokenSeedance";
 import { catalogManagedWireHostMatches, catalogManagedWireIdentity, catalogManagedWireMappings } from "./catalogManagedWire";
 import { migrateGetTokenVendorAliases } from "./gettokenVendorMigration";
 import { repairGetTokenQwenImageContracts } from "./gettokenQwenImage";
@@ -636,6 +636,7 @@ export function applyBuiltinSeeds(state: CatalogState, now: string): { state: Ca
 
   const reconciled = { ...base, vendors, models, mappings };
   if (repairGetTokenPreset && repairGetTokenPresetAvailability(reconciled, now)) changed = true;
+  if (repairGetTokenSeedanceContracts(reconciled, now)) changed = true;
   if (repairGetTokenQwenImageContracts(reconciled, now)) changed = true;
 
   if (!changed) return { state, changed: false };

@@ -72,7 +72,7 @@ describe("applyBuiltinSeeds", () => {
     const repairedModel = repaired.models.find((candidate) => candidate.vendorKey === "gettoken")!;
     expect(repaired.vendors.find((candidate) => candidate.key === "gettoken")?.enabled).toBe(true);
     expect(repairedModel.enabled).toBe(true);
-    expect(repairedModel.meta).toMatchObject({ catalogPresetRevision: 2, catalogManagedWire: true });
+    expect(repairedModel.meta).toMatchObject({ catalogPresetRevision: 3, catalogManagedWire: true });
     expect((repairedModel.meta as Record<string, unknown>).adapter).toBeUndefined();
     expect(repaired.mappings.filter((mapping) => mapping.vendorKey === "gettoken").every((mapping) => mapping.enabled)).toBe(true);
 

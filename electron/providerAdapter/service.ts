@@ -86,6 +86,7 @@ export type ProviderAdapterServiceDependencies = {
   compileTimeoutMs?: number;
   repairTimeoutMs?: number;
   verifyTimeoutMs?: number;
+  videoVerifyTimeoutMs?: number;
 };
 
 export function prioritizeCompilerCandidates<T extends { vendorKey: string }>(
@@ -160,6 +161,7 @@ const defaultDependencies: ProviderAdapterServiceDependencies = {
   compileTimeoutMs: 120_000,
   repairTimeoutMs: 90_000,
   verifyTimeoutMs: 90_000,
+  videoVerifyTimeoutMs: 180_000,
 };
 
 type ModeResultWithModel = AdapterModeResult & { modelKey: string };
@@ -544,7 +546,10 @@ export class ProviderAdapterService {
         }));
         let verified: AdapterVerificationResult;
         try {
-          verified = await this.awaitStep(id, "Model verification", this.dependencies.verifyTimeoutMs ?? 90_000, (signal) =>
+          const verifyTimeoutMs = model.kind === "video"
+            ? this.dependencies.videoVerifyTimeoutMs ?? 180_000
+            : this.dependencies.verifyTimeoutMs ?? 90_000;
+          verified = await this.awaitStep(id, "Model verification", verifyTimeoutMs, (signal) =>
             this.dependencies.verify({ vendor: connection.vendor, model, apiKey: connection.apiKey, mode, signal }),
           );
         } catch (error) {

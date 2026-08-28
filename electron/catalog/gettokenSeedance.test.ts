@@ -3,7 +3,7 @@ import { buildHttpRequest, buildTemplateContext } from "../ai/requestPipeline";
 import { firstMappedString, resolveTaskStatus, valuesFromMapping } from "../tasks/responseParsing";
 import { applyRequestTransform } from "../tasks/requestTransforms";
 import { draftShapeForKind } from "./catalogCommit";
-import { GETTOKEN_SEEDANCE_PROFILE, isGetTokenBaseUrl } from "./gettokenSeedance";
+import { GETTOKEN_PRESET_REVISION, GETTOKEN_SEEDANCE_PROFILE, isGetTokenBaseUrl, repairGetTokenSeedanceContracts } from "./gettokenSeedance";
 import { builtinVendorKeyForHostname } from "./builtinVendorSeeds";
 import {
   listVerifiedWireProfiles,
@@ -241,7 +241,50 @@ describe("GetToken Seedance wire profile", () => {
     expect(unreachableReferenceLabels(request, body)).toContain("参考图");
   });
 
-  it("兼容 skill 记录的 task id、嵌套状态和结果 URL 响应", () => {
+  it("启动时修复 credential-scoped GetToken 的旧查询映射且保留连接身份", () => {
+    const now = "2026-08-28T12:00:00.000Z";
+    const staleQuery = {
+      method: "GET" as const,
+      path: "/v1/video/generations/{{providerMeta.task_id}}",
+      headers: { Authorization: "Bearer {{user_api_key}}" },
+      response_mapping: { task_id: ["task_id", "id", "data.task_id"], status: ["status", "data.status"] },
+    };
+    const state = {
+      version: 10,
+      vendors: ["gettoken-2", "gettoken-3"].map((key) => ({ key, name: key, baseUrlHint: "https://www.gettoken.net", authType: "bearer", enabled: true })),
+      models: ["gettoken-2", "gettoken-3"].map((vendorKey) => ({
+        vendorKey, modelKey: "doubao-seedance-2-0-260128", labelZh: "Seedance 2.0", kind: "video", enabled: true,
+        meta: { wireProfile: "gettoken-seedance-2", catalogPresetRevision: 2 }, createdAt: "old", updatedAt: "old",
+      })),
+      mappings: ["gettoken-2", "gettoken-3"].flatMap((vendorKey) =>
+        (["text_to_video", "image_to_video"] as const).map((taskKind) => ({
+          id: `${vendorKey}-${taskKind}`, vendorKey, modelKey: "doubao-seedance-2-0-260128", taskKind,
+          name: taskKind, enabled: true, create: GETTOKEN_SEEDANCE_PROFILE.create[taskKind]!, query: staleQuery,
+          statusMapping: GETTOKEN_SEEDANCE_PROFILE.statusMapping, createdAt: "old", updatedAt: "old",
+        }))),
+      apiKeysByVendor: {
+        "gettoken-2": { vendorKey: "gettoken-2", apiKey: "cipher-two", enc: "safeStorage", enabled: true, createdAt: "old", updatedAt: "old" },
+        "gettoken-3": { vendorKey: "gettoken-3", apiKey: "cipher-three", enc: "safeStorage", enabled: true, createdAt: "old", updatedAt: "old" },
+      },
+    };
+
+    const credentialsBefore = JSON.stringify(state.apiKeysByVendor);
+    expect(repairGetTokenSeedanceContracts(state as never, now)).toBe(true);
+    for (const model of state.models) {
+      expect(model.meta).toMatchObject({ catalogPresetRevision: GETTOKEN_PRESET_REVISION, wireProfile: "gettoken-seedance-2" });
+    }
+    expect(state.mappings.map((mapping) => mapping.id)).toEqual([
+      "gettoken-2-text_to_video", "gettoken-2-image_to_video", "gettoken-3-text_to_video", "gettoken-3-image_to_video",
+    ]);
+    for (const mapping of state.mappings) {
+      expect(mapping.query.response_mapping).toEqual(GETTOKEN_SEEDANCE_PROFILE.query!.response_mapping);
+      expect(mapping.enabled).toBe(true);
+    }
+    expect(JSON.stringify(state.apiKeysByVendor)).toBe(credentialsBefore);
+    expect(repairGetTokenSeedanceContracts(state as never, now)).toBe(false);
+  });
+
+  it("任务身份优先取 provider task_id，终态提取当前 GetToken 视频地址", () => {
     const createMapping = GETTOKEN_SEEDANCE_PROFILE.create.text_to_video!.response_mapping as Record<string, unknown>;
     expect(firstMappedString({ data: [{ task_id: "task_123" }] }, createMapping, "task_id")).toBe("task_123");
 
@@ -249,10 +292,14 @@ describe("GetToken Seedance wire profile", () => {
     const response = {
       code: "success",
       data: {
+        id: 22,
+        task_id: "task_123",
         status: "SUCCESS",
+        result_url: "https://cdn.example/result.mp4",
         data: { content: { video_url: "https://cdn.example/result.mp4" } },
       },
     };
+    expect(firstMappedString(response, queryMapping, "task_id")).toBe("task_123");
     const urls = valuesFromMapping(response, queryMapping, "video_url");
     expect(urls).toContain("https://cdn.example/result.mp4");
     expect(

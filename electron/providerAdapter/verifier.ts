@@ -237,10 +237,11 @@ export async function verifyAdapterMode(
     });
 
     if (normalized.result.status === "failed") throw new Error(normalized.result.error || "Provider returned a failed task");
+    const acceptedProviderMeta = normalized.providerMeta;
     if (normalized.result.status !== "succeeded") {
       if (!input.mode.query) throw new Error("Provider returned a pending task but the adapter has no query operation");
       stage = "poll";
-      const maxPolls = dependencies.maxPolls ?? 40;
+      const maxPolls = dependencies.maxPolls ?? (input.model.kind === "video" ? 60 : 40);
       for (let attempt = 0; attempt < maxPolls && normalized.result.status !== "succeeded"; attempt += 1) {
         if (attempt > 0) await waitForPoll(sleep, dependencies.pollIntervalMs ?? 3_000, input.signal);
         executed = await execute({
@@ -250,7 +251,12 @@ export async function verifyAdapterMode(
           request,
           operation: input.mode.query,
           stage: "query",
-          providerMeta: normalized.providerMeta,
+          providerMeta: {
+            ...normalized.providerMeta,
+            ...acceptedProviderMeta,
+            query_id: acceptedProviderMeta.query_id || acceptedProviderMeta.task_id || normalized.providerMeta.query_id,
+            task_id: acceptedProviderMeta.task_id || acceptedProviderMeta.query_id || normalized.providerMeta.task_id,
+          },
           localAssetReader: defaultReadFixture,
           signal: input.signal,
         });

@@ -80,7 +80,7 @@ try {
   const storedModel = stored.models.find((model) => model.vendorKey === 'gettoken' && model.modelKey === 'doubao-seedance-2-0-260128')
   if (!storedModel?.enabled) failures.push('Upgrade did not persist enabled=true for GetToken Seedance')
   if (storedModel?.meta?.adapter) failures.push('Upgrade left stale generic adapter metadata on GetToken Seedance')
-  if (storedModel?.meta?.catalogPresetRevision !== 2) failures.push('Upgrade did not persist GetToken preset revision 2')
+  if (storedModel?.meta?.catalogPresetRevision !== 3) failures.push('Upgrade did not persist GetToken preset revision 3')
   const gettokenMappings = stored.mappings.filter((mapping) => mapping.vendorKey === 'gettoken')
   if (gettokenMappings.length !== 2 || gettokenMappings.some((mapping) => !mapping.enabled)) {
     failures.push('Upgrade did not persist both enabled GetToken Seedance mappings')
