@@ -18,6 +18,8 @@ export type ImageEditProbeOutcome = "openai-multipart-edits" | null;
 // 端点在、只是缺图的正信号（英文各家措辞双向：image 在关键词前或后 + 中文）。
 const ENDPOINT_PRESENT_RE =
   /image[^.]{0,24}(required|missing|must|empty|provide|expected|need)|(required|missing|must|provide|expected|need|empty|upload|no)[^.]{0,24}image|'image'|"image"|image\[\]|缺.{0,6}图|图片?.{0,8}(必填|不能为空|缺失|必须|不可为空)/i;
+const EXPLICIT_MISSING_IMAGE_RE =
+  /image[^.]{0,24}(required|missing|must.{0,8}(provide|upload)|need)|(required|missing|must|need)[^.]{0,24}image|缺.{0,6}图|图片?.{0,8}(必填|缺失|必须|不可为空)/i;
 // 端点根本不在的负信号（路由/模型未找到）。
 const ENDPOINT_ABSENT_RE =
   /not\s*found|no\s*such|unknown\s*(path|route|endpoint|model|url)|invalid\s*url|route[^.]{0,16}not|does\s*not\s*exist|无此|不存在|未找到|无效的?\s*(路径|路由|接口)/i;
@@ -30,9 +32,13 @@ export function classifyImageEditProbe(status: number | null, errorText: string)
   // 明确「端点不在」优先（避免负信号文本里恰好含 image 被误判成 present）。
   if (status === 404 || status === 405 || status === 501) return null;
   if (ENDPOINT_ABSENT_RE.test(text)) return null;
-  // 端点在、只是缺图。
+  // 端点在、只是缺图。部分 New API 中转把请求转换失败错误包装成 500，但只要错误明确说
+  // image required/missing，就已经证明路由和 multipart 转换器存在；仍先受上面的路由不存在信号约束。
   if ((status === 400 || status === 422) && ENDPOINT_PRESENT_RE.test(text)) return "openai-multipart-edits";
-  // 400 但没提 image、鉴权错、5xx——拿不准，保守交回智能默认。
+  if (typeof status === "number" && status >= 500 && status < 600 && EXPLICIT_MISSING_IMAGE_RE.test(text)) {
+    return "openai-multipart-edits";
+  }
+  // 没提 image、鉴权错、普通 5xx——拿不准，保守交回智能默认。
   return null;
 }
 

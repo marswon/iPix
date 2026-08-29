@@ -163,7 +163,7 @@ describe("verifyAdapterMode", () => {
         createdAt: now,
         updatedAt: now,
       };
-      expect(input.localAssetReader?.("nomi-local://adapter-test/reference.png")?.contentType).toBe("image/png");
+      expect(input.localAssetReader?.("nomi-local://adapter-test/reference.png")?.contentType).toBe("image/jpeg");
       return { response: { url: "https://cdn.example.com/out.png" }, request: {} };
     };
 

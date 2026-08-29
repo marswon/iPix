@@ -7,11 +7,12 @@ describe("imageEditProbe 分类器（各站报错形状 → 端点存在性）",
     expect(classifyImageEditProbe(201, "{}")).toBe("openai-multipart-edits");
   });
 
-  it("400/422 且报错提到缺 image → 端点在", () => {
+  it("报错明确缺 image → 端点在，包括把转换错误包装成 500 的中转", () => {
     expect(classifyImageEditProbe(400, `{"error":{"message":"Missing required parameter: 'image'."}}`)).toBe("openai-multipart-edits");
     expect(classifyImageEditProbe(400, "you must provide an image")).toBe("openai-multipart-edits");
     expect(classifyImageEditProbe(422, "image[] is required")).toBe("openai-multipart-edits");
     expect(classifyImageEditProbe(400, "图片不能为空")).toBe("openai-multipart-edits");
+    expect(classifyImageEditProbe(500, `{"error":{"message":"image is required","code":"convert_request_failed"}}`)).toBe("openai-multipart-edits");
   });
 
   it("404/405/501 → 端点不在（null）", () => {
@@ -30,6 +31,8 @@ describe("imageEditProbe 分类器（各站报错形状 → 端点存在性）",
     expect(classifyImageEditProbe(401, "invalid api key")).toBeNull();
     expect(classifyImageEditProbe(403, "forbidden")).toBeNull();
     expect(classifyImageEditProbe(500, "internal error")).toBeNull();
+    expect(classifyImageEditProbe(500, `failed to decode 'image'`)).toBeNull();
+    expect(classifyImageEditProbe(500, "upstream rejected image[]")).toBeNull();
     expect(classifyImageEditProbe(400, "prompt too long")).toBeNull(); // 没提 image
   });
 

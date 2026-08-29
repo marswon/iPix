@@ -5,6 +5,7 @@
 
 import { renderTemplateValue } from "../ai/requestPipeline";
 import { readNomiLocalAsset } from "../assets/localAssetFile";
+import type { LocalAssetReader } from "./assetLocalization";
 import { appFetch } from "../appFetch";
 import { templateContext, buildProfileHttpRequest } from "./profileHttpRequest";
 import type { HttpOperation, Model, Vendor } from "./types";
@@ -110,7 +111,7 @@ export async function executeMultipartOperation(input: {
  * 但走 FormData。requestMultipart 由 runtime 注入（避免反向依赖 vendorHttp 的 vendor 计费上下文）。
  */
 export async function runMultipartProfileOperation(
-  input: { vendor: Vendor; model: Model; apiKey: string; request: TaskRequest; operation: HttpOperation; providerMeta?: Record<string, unknown> },
+  input: { vendor: Vendor; model: Model; apiKey: string; request: TaskRequest; operation: HttpOperation; providerMeta?: Record<string, unknown>; localAssetReader?: LocalAssetReader },
   sendMultipart: (url: string, headers: Record<string, string>, query: Record<string, unknown>, form: FormData) => Promise<unknown>,
 ): Promise<{ response: unknown; request: unknown }> {
   // 与 JSON 路共用 profileHttpRequest 构造（P1 不另造一套）：context 渲染 multipart.fields，built 出 url/headers。
@@ -119,7 +120,11 @@ export async function runMultipartProfileOperation(
   return executeMultipartOperation({
     multipart: input.operation.multipart!,
     context,
-    resolveImage: resolveReferenceImageBytes,
+    resolveImage: async (url) => {
+      const injected = input.localAssetReader?.(url);
+      if (injected) return { bytes: injected.bytes, contentType: injected.contentType, fileName: injected.fileName };
+      return resolveReferenceImageBytes(url);
+    },
     send: (form) => sendMultipart(built.url, built.headers, built.query, form),
   });
 }

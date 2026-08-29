@@ -7,6 +7,7 @@ import { decryptApiKeyRecord } from "../catalog/secrets";
 import type { BillingModelKind, Model, Vendor } from "../catalog/types";
 import { humanizeModelKey } from "../catalog/modelLabel";
 import { AdapterNeedsAiError, compileProviderAdapter, repairProviderAdapter } from "./compiler";
+import { applyTrustedMediaContracts } from "./trustedMediaContracts";
 import { discoverProviderDocs, type DiscoveredDocs } from "./docsDiscovery";
 import { builtinDraftForUndocumentedEndpoint } from "./builtinOpenAiCompatibleDraft";
 import {
@@ -392,10 +393,11 @@ export class ProviderAdapterService {
         ...compilation.draft,
         models: withTextModels(compilation.draft.models, textModels),
       };
-      let verification = await this.verifyDraft(id, connection, candidate, 1, compilation.failures);
+      let executableCandidate = applyTrustedMediaContracts(candidate);
+      let verification = await this.verifyDraft(id, connection, executableCandidate, 1, compilation.failures);
       let results = verification.results;
       if (verification.deadlineError) {
-        await this.promoteFinal(id, candidate, results, verification.deadlineError, true);
+        await this.promoteFinal(id, executableCandidate, results, verification.deadlineError, true);
         return;
       }
       const maxRepairs = this.dependencies.maxRepairs ?? 2;
@@ -433,6 +435,7 @@ export class ProviderAdapterService {
             }),
           );
           candidate = { ...repaired, models: withTextModels(repaired.models, textModels) };
+          executableCandidate = applyTrustedMediaContracts(candidate);
         } catch (error) {
           if (error instanceof AdapterWaitError) {
             if (error.reason === "cancelled" || error.reason === "terminal") throw error;
@@ -444,7 +447,7 @@ export class ProviderAdapterService {
           break;
         }
         // Full regression after every repair: a local fix must not break a mode that previously passed.
-        verification = await this.verifyDraft(id, connection, candidate, repairAttempt + 1, compilation.failures);
+        verification = await this.verifyDraft(id, connection, executableCandidate, repairAttempt + 1, compilation.failures);
         results = verification.results;
         if (verification.deadlineError) {
           repairError = verification.deadlineError;
@@ -457,7 +460,7 @@ export class ProviderAdapterService {
         : undefined;
       await this.promoteFinal(
         id,
-        candidate,
+        executableCandidate,
         results,
         [compileError, repairError].filter(Boolean).join("; ") || undefined,
         deadlineReached,

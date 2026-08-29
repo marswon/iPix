@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { executeMultipartOperation } from "./multipartOperation";
+import { executeMultipartOperation, runMultipartProfileOperation } from "./multipartOperation";
 import { OPENAI_MULTIPART_IMAGE_EDIT_OP } from "./newapiTransport";
 import { taskTemplateParams } from "./taskParams";
 import { applyParamMap } from "./paramTranslate";
@@ -89,6 +89,31 @@ describe("multipart 图生图（/v1/images/edits）请求装配", () => {
       send: async () => ({}),
     });
     expect(seen).toEqual(["https://x/a.png"]);
+  });
+
+  it("完整分发优先使用 verifier 注入的本地素材 reader", async () => {
+    let sent: FormData | null = null;
+    await runMultipartProfileOperation({
+      vendor: {
+        key: "relay", name: "Relay", enabled: true, baseUrlHint: "https://relay.example", authType: "bearer",
+        createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      model: {
+        vendorKey: "relay", modelKey: "gpt-image-2", labelZh: "GPT Image 2", kind: "image", enabled: true,
+        createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      apiKey: "sk-test",
+      request: { kind: "image_edit", prompt: "edit", extras: { referenceImages: ["nomi-local://adapter-test/reference.png"] } },
+      operation: OPENAI_MULTIPART_IMAGE_EDIT_OP,
+      localAssetReader: (url) => url.includes("adapter-test")
+        ? { bytes: Buffer.from("fixture"), contentType: "image/png", fileName: "fixture.png" }
+        : null,
+    }, async (_url, _headers, _query, form) => {
+      sent = form;
+      return { data: [{ url: "https://out/1.png" }] };
+    });
+    const { files } = await readForm(sent!);
+    expect(files).toEqual([{ field: "image[]", name: "fixture.png", size: 7, type: "image/png" }]);
   });
 
   it("preview 只留形状不含字节（不泄原图）", async () => {

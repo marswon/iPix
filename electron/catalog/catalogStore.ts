@@ -8,6 +8,7 @@ import { type ApiKeyRecord, decryptApiKeyRecord, makeApiKeyRecordFromPlain } fro
 import { humanizeModelKey } from "./modelLabel";
 import { activateCatalogManagedCredential, applyBuiltinSeeds } from "./seedBuiltins";
 import { migrateRelayImageEditProtocols } from "./relayImageEditMigration";
+import { repairGetOneImageContracts } from "./getoneImage";
 import { migrateRelayVideoImageToVideo } from "./relayVideoI2vMigration";
 import { migrateComfyWorkflowOutputs } from "./comfyuiWorkflowOutputMigration";
 import { migrateRelayImageEditCapability, migrateRelayParamMaps } from "./relayLegacyMigrations";
@@ -186,14 +187,15 @@ function migrateCatalogForward(state: CatalogState): CatalogState {
   }
 
   if ((s.version as number) > CURRENT_CATALOG_VERSION) {
-    // Newer file than this app understands — return it untouched so it stays
-    // readable, and let `writeCatalog` REFUSE any write back (read-only guard).
-    // This actually enforces "don't downgrade" instead of only warning about it.
+    // Keep newer files readable while writeCatalog enforces the no-downgrade guard.
     console.warn(
       `[catalog] file version ${s.version} > app version ${CURRENT_CATALOG_VERSION}; read-only (writes refused)`,
     );
     return s;
   }
+
+  const repairedImages = repairGetOneImageContracts(migrateRelayImageEditProtocols(s).state);
+  if (repairedImages.state !== s) writeCatalog((s = repairedImages.state));
 
   return s;
 }

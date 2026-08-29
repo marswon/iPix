@@ -55,7 +55,7 @@ function toDraftParameters(params: readonly ParamControl[]): DraftParameters {
 // `Authorization: Bearer {{user_api_key}}` 写死了。自建端点常常**根本不需要 key**（ComfyUI、
 // Ollama、LM Studio 默认无鉴权）——照抄就会发出一个空的 `Authorization: Bearer `，有的服务直接拒。
 // 鉴权头必须随 authType derive，不能钉死（接入矩阵测试跑出来的）。
-function withAuthHeader(operation: HttpOperation, authType: AdapterAuthType): HttpOperation {
+export function withAuthHeader(operation: HttpOperation, authType: AdapterAuthType): HttpOperation {
   const headers: Record<string, string> = { ...(operation.headers || {}) };
   delete headers.Authorization;
   if (authType === "bearer") headers.Authorization = "Bearer {{user_api_key}}";

@@ -86,6 +86,7 @@ function fakeCatalog(): ProviderAdapterCatalogPort & {
     { vendorKey: vendor.key, modelKey: "paint-v2", labelZh: "Paint V2", kind: "image", enabled: false, createdAt: now, updatedAt: now },
     { vendorKey: vendor.key, modelKey: "paint-v3", labelZh: "Paint V3", kind: "image", enabled: false, createdAt: now, updatedAt: now },
     { vendorKey: vendor.key, modelKey: "mesh-v1", labelZh: "Mesh V1", kind: "model3d", enabled: false, createdAt: now, updatedAt: now },
+    { vendorKey: vendor.key, modelKey: "gpt-image-2", labelZh: "GPT Image 2", kind: "image", enabled: false, createdAt: now, updatedAt: now },
   ];
   return {
     promoted: [],
@@ -280,6 +281,49 @@ describe("ProviderAdapterService", () => {
     // 草稿次序＝先编译出来的媒体模型，再合入确定性的文本条目（分级，2026-08-12）。
     expect(catalog.promoted[0]?.verified).toEqual(["paint-v2/text_to_image", "text-v1/chat"]);
     expect(service.getRun(started.id)?.stage).toBe("partial");
+  });
+
+  it("verifies and promotes GPT Image edits through the trusted multipart contract, not compiled chat JSON", async () => {
+    const catalog = fakeCatalog();
+    const deps = dependencies(catalog);
+    const compiled: ProviderAdapterDraft = {
+      provider: { baseUrl: "https://api.example.com/v1", authType: "bearer" },
+      sources: [{ url: "https://docs.example.com/api", evidence: "GPT Image edit" }],
+      models: [{
+        modelKey: "gpt-image-2",
+        labelZh: "GPT Image 2",
+        kind: "image",
+        modes: [{
+          taskKind: "image_edit",
+          create: { method: "POST", path: "/v1/chat/completions", body: {} },
+          referenceParam: "image_url",
+          referenceShape: "single",
+          sourceUrls: ["https://docs.example.com/api"],
+        }],
+      }],
+    };
+    deps.compile = async () => ({ draft: compiled, failures: [] });
+    let repairCalls = 0;
+    deps.repair = async () => {
+      repairCalls += 1;
+      return compiled;
+    };
+    deps.verify = async ({ mode }) => {
+      expect(mode.create.path).toBe("/v1/images/edits");
+      expect(mode.create.multipart?.imageField).toBe("image[]");
+      return { ok: true, taskKind: mode.taskKind };
+    };
+    const service = new ProviderAdapterService(store(), deps);
+    const started = service.start({
+      ...startInput,
+      models: [{ modelKey: "gpt-image-2", labelZh: "GPT Image 2", kind: "image" }],
+    });
+
+    await service.executeRun(started.id);
+
+    expect(repairCalls).toBe(0);
+    expect(catalog.promoted[0]?.verified).toEqual(["gpt-image-2/image_edit"]);
+    expect(catalog.promoted[0]?.draft.models[0].modes[0].create.path).toBe("/v1/images/edits");
   });
 
   it("retests every mode after an AI repair so a fix cannot regress a prior pass", async () => {

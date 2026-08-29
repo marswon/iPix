@@ -79,7 +79,30 @@ describe("v6 → v7：存量 gpt-image 图生图重迁移到 multipart", () => {
     expect(JSON.parse(fs.readFileSync(catalogFile(), "utf8")).version).toBe(CURRENT_CATALOG_VERSION);
   });
 
-  it("幂等：v7 catalog 再读不再改动（迁移只在版本门触发一次）", async () => {
+  it("当前版本中后写入的 exact chat mapping 也在 read 时原位修复", async () => {
+    const current = v6CatalogWithChatGptImage();
+    current.version = CURRENT_CATALOG_VERSION;
+    Object.assign(current.mappings[1], { modelKey: "gpt-image-2" });
+    current.models[0].meta = { imageOptions: { supportsReferenceImages: false } };
+    current.apiKeysByVendor = {
+      "code-newcli-com": { vendorKey: "code-newcli-com", apiKey: "encrypted-marker", enabled: true, enc: "safeStorage", createdAt: NOW, updatedAt: NOW },
+    };
+    const unrelatedBefore = structuredClone(current.mappings[0]);
+    fs.writeFileSync(catalogFile(), JSON.stringify(current), "utf8");
+    const { readCatalog } = await import("./catalogStore");
+    const state = readCatalog();
+    const exact = state.mappings.find((mapping) => mapping.id === "m-edit");
+    expect(exact).toMatchObject({ id: "m-edit", vendorKey: "code-newcli-com", modelKey: "gpt-image-2" });
+    expect(exact?.create.path).toBe("/v1/images/edits");
+    expect(exact?.create.multipart?.imageField).toBe("image[]");
+    expect(state.mappings.find((mapping) => mapping.id === "m-t2i")).toEqual(unrelatedBefore);
+    expect(state.apiKeysByVendor["code-newcli-com"]?.apiKey).toBe("encrypted-marker");
+    expect(state.models[0].meta).toMatchObject({
+      imageOptions: { supportsReferenceImages: true, imageEditProtocol: "openai-multipart-edits" },
+    });
+  });
+
+  it("幂等：修复后的 catalog 再读不再改动", async () => {
     fs.writeFileSync(catalogFile(), JSON.stringify(v6CatalogWithChatGptImage()), "utf8");
     const { readCatalog } = await import("./catalogStore");
     readCatalog(); // v6→v7 一次
