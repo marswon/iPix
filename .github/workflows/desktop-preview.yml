@@ -159,11 +159,12 @@ jobs:
           }
           [[ -f prerelease/iPix.Preview-win-x64.exe ]] || { echo "Missing exact Windows x64 asset" >&2; exit 1; }
           notes=$(cat <<EOF
-          iPix GetToken model-service test build.
+          iPix GetOne and GetToken model-service test build.
 
-          - Fixes Qwen Image 2.0 Pro reference-image editing through the verified GetToken image endpoint.
-          - Supports multiple independent GetToken credentials and stable Seedance 2.0 polling.
-          - Repairs stale credential-scoped Seedance mappings, preserves provider task identity during model tests, extracts current result URLs, and enables Seedance 2.0 omni-reference inputs on GetToken.
+          - Fixes GPT Image 2 reference-image editing on GetOne through the verified multipart /v1/images/edits contract.
+          - Automatically carries the selected aspect ratio into GetOne prompts because its current GPT Image route ignores structured size fields.
+          - Repairs stale GPT Image edit mappings in place while preserving saved connections, credentials, and model identity.
+          - Retains the GetToken Seedance 2.0 polling, current result URL, omni-reference, and Qwen Image 2.0 Pro editing fixes from the previous build.
           - Includes Apple Silicon DMG, Intel x64 DMG (macOS 12.0+), and Windows x64 installer assets from the same source commit.
           - Upgrade note: quit and remove the old Nomi Preview app after installing iPix Preview; existing projects, settings, and credentials remain in the compatible data directory.
           - Source commit: $SOURCE_SHA

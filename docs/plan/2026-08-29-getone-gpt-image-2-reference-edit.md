@@ -30,7 +30,7 @@ The catalog already knows the standard GPT Image edit contract: multipart `POST 
 - No new UI or GetOne-only model archetype.
 - No credential replacement or connection recreation.
 - No change to chat-based image models such as Nano Banana.
-- No release publication unless explicitly requested after the fix is verified and pushed.
+- Release publication is deferred until explicitly requested after the fix is verified and pushed. The user requested publication on 2026-08-29; target prerelease: `v0.21.0-gettoken.8`.
 
 ## Acceptance Gates
 
